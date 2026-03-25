@@ -22,10 +22,13 @@ when_to_use: Trigger conditions...# additional trigger phrases and exclusions
 
 All inference runs through one of two backends (selectable via `--backend`):
 
-- **`cli`** (default) -- invokes `claude -p "query" --output-format json` as a subprocess. Uses your existing Claude CLI auth.
+- **`cli`** (default) -- invokes `claude -p "query" --output-format json` as a subprocess. Uses your existing Claude CLI auth (OAuth/subscription).
 - **`sdk`** -- uses `claude_agent_sdk.query()` async API. Uses Claude Code session tokens.
+- **`api`** -- uses the Anthropic Python SDK directly with `ANTHROPIC_API_KEY`. No Claude CLI or OAuth required.
 
-Both backends are used for test query generation, skill invocation testing, and optimization rewrites. The tester inspects the response event stream for `Skill` tool_use blocks. Detection is binary -- the skill either invoked or it didn't. No heuristics.
+If `--backend cli` is selected but the CLI isn't available, the tool automatically falls back to `api` when `ANTHROPIC_API_KEY` is set.
+
+All three backends are used for test query generation and optimization rewrites. Trigger detection (the actual "did the skill fire?" check) requires the Claude Code runtime, so `run` and the test phase of `quick`/`optimize` always use `cli` or `sdk` -- even when `api` is selected for inference.
 
 The optimizer treats `description` + `when_to_use` as a prompt to be optimized against a test suite with regression protection.
 
@@ -34,7 +37,10 @@ The optimizer treats `description` + `when_to_use` as a prompt to be optimized a
 ```bash
 git clone https://github.com/jimmc414/claude-skill-tester.git
 cd claude-skill-tester
-pip install -e .
+pip install -e .            # CLI backend (default)
+pip install -e ".[sdk]"     # + Agent SDK backend
+pip install -e ".[api]"     # + Anthropic API key backend
+pip install -e ".[all]"     # all backends
 
 # Test a skill
 skill-test quick ~/.claude/skills/my-skill/

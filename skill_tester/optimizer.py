@@ -5,7 +5,7 @@ import shutil
 import sys
 from pathlib import Path
 
-from .generator import _generate_via_cli, _generate_via_sdk, generate_tests
+from .generator import call_claude, generate_tests
 from .models import (
     OptimizationResult,
     OptimizationRound,
@@ -78,6 +78,13 @@ def optimize_skill(
         target_f1=target_f1,
     )
 
+    # Trigger detection requires the Claude Code runtime (cli or sdk).
+    # When backend is "api", we use it for inference (generation + proposals)
+    # but fall back to "cli" for the actual trigger test runs.
+    run_backend = "cli" if backend == "api" else backend
+    if backend == "api":
+        print("  Note: using API for inference, CLI for trigger detection", file=sys.stderr)
+
     regression_cases: list[TestCase] = []
     backed_up = False
 
@@ -87,7 +94,7 @@ def optimize_skill(
             file=sys.stderr,
         )
 
-        # Generate fresh tests from current description
+        # Generate fresh tests from current description (uses chosen backend)
         print("  Generating test queries...", file=sys.stderr, flush=True)
         fresh_cases = generate_tests(skill, n_positive, n_negative, backend)
 
@@ -99,9 +106,9 @@ def optimize_skill(
                 all_cases.append(rc)
                 seen.add(rc.query)
 
-        # Run suite
+        # Run suite (always cli or sdk — trigger detection needs Claude Code)
         print(f"  Running {len(all_cases)} tests ({len(regression_cases)} regression)...", file=sys.stderr, flush=True)
-        results = run_suite(all_cases, skill.name, timeout=timeout, backend=backend)
+        results = run_suite(all_cases, skill.name, timeout=timeout, backend=run_backend)
         card = score(results)
 
         # Collect failures
@@ -209,10 +216,7 @@ def _propose_improvements(
         tp_list=tp_list,
     )
 
-    if backend == "sdk":
-        text = _generate_via_sdk(prompt)
-    else:
-        text = _generate_via_cli(prompt)
+    text = call_claude(prompt, backend)
 
     # Strip markdown code fences if present
     stripped = text.strip()

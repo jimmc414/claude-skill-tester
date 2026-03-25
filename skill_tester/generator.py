@@ -56,12 +56,16 @@ def generate_tests(
         n_negative=n_negative,
     )
 
-    if backend == "sdk":
-        text = _generate_via_sdk(prompt)
-    else:
-        text = _generate_via_cli(prompt)
-
+    text = call_claude(prompt, backend)
     return _parse_response(text)
+
+
+def call_claude(prompt: str, backend: str) -> str:
+    if backend == "sdk":
+        return _generate_via_sdk(prompt)
+    if backend == "api":
+        return _generate_via_api(prompt)
+    return _generate_via_cli(prompt)
 
 
 def _generate_via_cli(prompt: str) -> str:
@@ -100,6 +104,18 @@ def _generate_via_sdk(prompt: str) -> str:
         return "\n".join(text_parts)
 
     return asyncio.run(_run())
+
+
+def _generate_via_api(prompt: str, model: str = "claude-sonnet-4-20250514") -> str:
+    from anthropic import Anthropic
+
+    client = Anthropic()
+    response = client.messages.create(
+        model=model,
+        max_tokens=2048,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return response.content[0].text
 
 
 def _parse_response(text: str) -> list[TestCase]:

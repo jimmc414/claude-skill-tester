@@ -17,6 +17,7 @@ def run_test(
 ) -> TestResult:
     if backend == "sdk":
         return _run_test_sdk(case, target_skill, timeout)
+    # "api" falls back to "cli" — trigger detection requires the Claude Code runtime
     return _run_test_cli(case, target_skill, timeout)
 
 

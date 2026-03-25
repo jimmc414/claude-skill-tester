@@ -6,7 +6,35 @@ from pathlib import Path
 
 from . import __version__
 
-_BACKEND_HELP = 'Backend: "cli" uses claude -p, "sdk" uses Claude Agent SDK (default: cli)'
+_BACKEND_HELP = (
+    'Backend: "cli" uses claude -p (OAuth), "sdk" uses Claude Agent SDK, '
+    '"api" uses Anthropic API key (ANTHROPIC_API_KEY env var). '
+    'Default: cli, falls back to api if claude CLI auth is unavailable.'
+)
+_BACKEND_CHOICES = ["cli", "sdk", "api"]
+
+
+def _resolve_backend(requested: str) -> str:
+    """Resolve backend, falling back to 'api' if CLI auth is unavailable."""
+    if requested != "cli":
+        return requested
+    # Check if claude CLI is available and authenticated
+    import subprocess
+    try:
+        proc = subprocess.run(
+            ["claude", "--version"],
+            capture_output=True, text=True, timeout=5,
+        )
+        if proc.returncode == 0:
+            return "cli"
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        pass
+    # CLI not available — try api fallback
+    import os
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        print("  claude CLI unavailable, falling back to --backend api", file=sys.stderr)
+        return "api"
+    return "cli"  # let it fail with a clear error later
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -27,14 +55,14 @@ def main(argv: list[str] | None = None) -> None:
     p_gen.add_argument("-o", "--output", type=Path, default=Path("tests.yaml"), help="Output YAML path")
     p_gen.add_argument("--positive", type=int, default=10, help="Number of positive queries")
     p_gen.add_argument("--negative", type=int, default=5, help="Number of negative queries")
-    p_gen.add_argument("--backend", choices=["cli", "sdk"], default="cli", help=_BACKEND_HELP)
+    p_gen.add_argument("--backend", choices=_BACKEND_CHOICES, default="cli", help=_BACKEND_HELP)
 
     # run
     p_run = sub.add_parser("run", help="Execute a saved test suite")
     p_run.add_argument("test_suite", type=Path, help="Path to test suite YAML")
     p_run.add_argument("--timeout", type=int, default=120, help="Timeout per query in seconds")
     p_run.add_argument("--output", type=Path, help="Write markdown report to file")
-    p_run.add_argument("--backend", choices=["cli", "sdk"], default="cli", help=_BACKEND_HELP)
+    p_run.add_argument("--backend", choices=_BACKEND_CHOICES, default="cli", help=_BACKEND_HELP)
 
     # quick
     p_quick = sub.add_parser("quick", help="Generate + run in one step")
@@ -43,7 +71,7 @@ def main(argv: list[str] | None = None) -> None:
     p_quick.add_argument("--negative", type=int, default=5, help="Number of negative queries")
     p_quick.add_argument("--timeout", type=int, default=120, help="Timeout per query in seconds")
     p_quick.add_argument("--output", type=Path, help="Write markdown report to file")
-    p_quick.add_argument("--backend", choices=["cli", "sdk"], default="cli", help=_BACKEND_HELP)
+    p_quick.add_argument("--backend", choices=_BACKEND_CHOICES, default="cli", help=_BACKEND_HELP)
 
     # optimize
     p_opt = sub.add_parser("optimize", help="Optimize skill frontmatter for trigger accuracy")
@@ -53,7 +81,7 @@ def main(argv: list[str] | None = None) -> None:
     p_opt.add_argument("--positive", type=int, default=10, help="Positive queries per round")
     p_opt.add_argument("--negative", type=int, default=5, help="Negative queries per round")
     p_opt.add_argument("--timeout", type=int, default=120, help="Timeout per query in seconds")
-    p_opt.add_argument("--backend", choices=["cli", "sdk"], default="cli", help=_BACKEND_HELP)
+    p_opt.add_argument("--backend", choices=_BACKEND_CHOICES, default="cli", help=_BACKEND_HELP)
     p_opt.add_argument("--dry-run", action="store_true", help="Show proposed changes without writing")
     p_opt.add_argument("--output", type=Path, help="Write optimization report to markdown file")
 
@@ -96,6 +124,7 @@ def _cmd_generate(args: argparse.Namespace) -> None:
     from .generator import generate_tests, save_test_suite
     from .parser import parse_skill
 
+    args.backend = _resolve_backend(args.backend)
     skill = parse_skill(args.skill_path)
     print(f"Generating tests for: {skill.name} (backend: {args.backend})", file=sys.stderr)
     print(f"  {args.positive} positive + {args.negative} negative queries", file=sys.stderr)
@@ -115,6 +144,11 @@ def _cmd_run(args: argparse.Namespace) -> None:
     from .runner import run_suite
     from .scorer import score
 
+    args.backend = _resolve_backend(args.backend)
+    # Trigger detection requires Claude Code runtime — api falls back to cli
+    if args.backend == "api":
+        print("  Note: trigger detection requires claude CLI; using cli for test runs", file=sys.stderr)
+        args.backend = "cli"
     skill, cases = load_test_suite(args.test_suite)
     print(f"Running {len(cases)} tests for skill: {skill.name} (backend: {args.backend})\n", file=sys.stderr)
 
@@ -134,12 +168,16 @@ def _cmd_quick(args: argparse.Namespace) -> None:
     from .runner import run_suite
     from .scorer import score
 
+    args.backend = _resolve_backend(args.backend)
+    # Use chosen backend for generation; trigger detection needs cli or sdk
+    run_backend = "cli" if args.backend == "api" else args.backend
+
     skill = parse_skill(args.skill_path)
     print(f"Generating tests for: {skill.name} (backend: {args.backend})", file=sys.stderr)
     cases = generate_tests(skill, n_positive=args.positive, n_negative=args.negative, backend=args.backend)
 
     print(f"\nRunning {len(cases)} tests...\n", file=sys.stderr)
-    results = run_suite(cases, skill.name, timeout=args.timeout, backend=args.backend)
+    results = run_suite(cases, skill.name, timeout=args.timeout, backend=run_backend)
     card = score(results)
     print_report(skill, results, card)
 
@@ -151,6 +189,8 @@ def _cmd_quick(args: argparse.Namespace) -> None:
 def _cmd_optimize(args: argparse.Namespace) -> None:
     from .optimizer import optimize_skill
     from .reporter import print_optimization_report
+
+    args.backend = _resolve_backend(args.backend)
 
     mode = "DRY RUN" if args.dry_run else "LIVE"
     print(f"Optimizing skill ({mode}, target F1 >= {args.target_f1}, max {args.max_rounds} rounds)", file=sys.stderr)

@@ -102,3 +102,4 @@ venv
 
 # Demo folder (local testing)
 demo/
+egg-info/
