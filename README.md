@@ -30,7 +30,7 @@ Override with `--backend sdk|cli|api` to force a specific one.
 
 All three backends are used for test query generation and optimization rewrites. Trigger detection (the actual "did the skill fire?" check) requires the Claude Code runtime, so `run` and the test phase of `quick`/`optimize` always use `sdk` or `cli` -- even when `api` is selected for inference.
 
-The optimizer treats `description` + `when_to_use` as a prompt to be optimized against a test suite with regression protection.
+The optimizer treats `description` + `when_to_use` as a prompt to be optimized against a test suite with regression protection. When failures occur, it captures which rival skill intercepted the query and runs diagnostic queries to explain the semantic gap — transforming optimization from blind hill climbing to informed correction.
 
 ## Quick start
 
@@ -59,7 +59,7 @@ Requires Python 3.11+ and the `claude` CLI installed and authenticated.
 | `skill-test generate <path>` | Auto-generate positive + negative test queries to YAML |
 | `skill-test run <tests.yaml>` | Execute a test suite, report precision/recall/F1 |
 | `skill-test quick <path>` | Generate + run in one step (with health preamble) |
-| `skill-test optimize <path>` | Closed-loop: test, rewrite frontmatter, retest until F1 target |
+| `skill-test optimize <path>` | Closed-loop: test, diagnose failures, rewrite frontmatter, retest |
 | `skill-test discover` | List all installed Skill-tool skills with health grades |
 | `skill-test landscape` | Analyze skill ecosystem: budget consumption, health checks |
 
@@ -140,11 +140,12 @@ skill_tester/
   models.py      # SkillInfo, TestCase, TestResult, ScoreCard, HealthCheck, FrontmatterHealth
   parser.py      # SKILL.md parsing, frontmatter rewriting, skill discovery
   generator.py   # test query generation via CLI or Agent SDK
-  runner.py      # query execution + Skill tool_use detection
+  runner.py      # query execution + Skill tool_use detection + rival capture
   scorer.py      # precision/recall/F1 from results
   health.py      # static frontmatter analysis (budget, redundancy, field checks)
+  diagnose.py    # failure diagnostics (rival identification, semantic gap analysis)
   reporter.py    # terminal and markdown reporting
-  optimizer.py   # closed-loop frontmatter optimizer
+  optimizer.py   # closed-loop frontmatter optimizer with diagnostic context
   __main__.py    # CLI entry point
 ```
 

@@ -29,6 +29,8 @@ class TestResult:
     cost_usd: float = 0.0
     raw_output: list[dict] = field(default_factory=list)
     error: str | None = None
+    rival_skill: str | None = None
+    diagnosis: str | None = None
 
     @property
     def passed(self) -> bool:

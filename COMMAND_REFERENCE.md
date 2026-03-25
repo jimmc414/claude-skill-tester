@@ -125,10 +125,12 @@ Execute a saved test suite. Each query is sent to Claude and the output is inspe
 | `--timeout` | `120` | Timeout per query in seconds |
 | `--output` | (none) | Write a markdown report to this file path |
 | `--backend` | `auto` | `auto`, `sdk`, `cli`, or `api` |
+| `--diagnose` | off | Diagnose failures: identify rival skills and explain semantic gaps |
 
 **Example:**
 ```bash
 skill-test run my-skill-tests.yaml --timeout 120 --output report.md
+skill-test run my-skill-tests.yaml --diagnose  # includes failure explanations
 ```
 
 **What it does per query:**
@@ -172,10 +174,12 @@ Generate test queries and run them in one step. No intermediate YAML file. Use t
 | `--timeout` | `120` | Timeout per query in seconds |
 | `--output` | (none) | Write markdown report to file |
 | `--backend` | `auto` | `auto`, `sdk`, `cli`, or `api` |
+| `--diagnose` | off | Diagnose failures: identify rival skills and explain semantic gaps |
 
 **Example:**
 ```bash
 skill-test quick ~/.claude/skills/repo-retrospective/ --positive 5 --negative 3
+skill-test quick ~/.claude/skills/my-skill/ --diagnose  # includes failure explanations
 ```
 
 ### `skill-test optimize <skill_path> [options]`
@@ -203,6 +207,7 @@ The optimizer rewrites `description` and `when_to_use` each round. It analyzes t
 | `--backend` | `auto` | `auto`, `sdk`, `cli`, or `api` |
 | `--dry-run` | off | Show proposed changes without writing to SKILL.md |
 | `--output` | (none) | Write optimization report to file |
+| `--no-diagnose` | off | Disable failure diagnostics (on by default for optimize) |
 
 **Example:**
 ```bash
@@ -340,6 +345,26 @@ Static analysis of skill frontmatter quality. Runs automatically during `parse`,
 
 See [SKILL_FRONTMATTER.md](SKILL_FRONTMATTER.md) for the empirical research on which frontmatter fields Claude loads and how they influence skill selection.
 
+## Failure Diagnostics
+
+When `--diagnose` is enabled (or by default during `optimize`), the tool runs a post-test diagnostic pass on failures:
+
+**Rival capture (free — no API calls):** When a test query fails, the tool checks the existing event stream for which other skill (if any) fired instead. This transforms "query didn't trigger" into "query was intercepted by `explain-code`."
+
+**Diagnostic queries (one API call per failure):** For each false negative and false positive, the tool asks Claude to explain the semantic gap between the query and the skill's frontmatter. The explanation identifies missing keywords, overly broad terms, or rival skill conflicts.
+
+**Output format:**
+```
+  Failures:
+    #2 Expected TRIG but SKIP -- "Check our documentation for gaps"
+         Rival: explain-code
+         Reason: Description focuses on "onboarding" but query is about "documentation"...
+    #7 Expected SKIP but TRIG -- "Do a sprint retrospective"
+         Reason: Description contains "retrospective" which matched too broadly...
+```
+
+During optimization, diagnostic context is fed directly into the improvement prompt, enabling the optimizer to make targeted fixes rather than guessing.
+
 ## Detection Mechanism
 
 When Claude auto-triggers a skill, the JSON output from `claude -p --output-format json` contains an event with this structure inside an `assistant` message:
@@ -434,11 +459,12 @@ skill_tester/
 ├── models.py      # SkillInfo, TestCase, TestResult, ScoreCard, HealthCheck, FrontmatterHealth
 ├── parser.py      # parse_skill(), load_test_suite(), discover_skills(), rewrite_frontmatter()
 ├── generator.py   # generate_tests() via CLI or SDK, save_test_suite()
-├── runner.py      # run_test(), run_suite() via CLI or SDK
+├── runner.py      # run_test(), run_suite() via CLI or SDK, rival capture
 ├── scorer.py      # score() — confusion matrix from results
 ├── health.py      # check_frontmatter() — static frontmatter analysis
+├── diagnose.py    # diagnose_failures() — post-run semantic gap analysis
 ├── reporter.py    # print_report(), write_markdown(), print_health(), print_landscape()
-├── optimizer.py   # optimize_skill() — closed-loop description optimizer
+├── optimizer.py   # optimize_skill() — closed-loop optimizer with diagnostic context
 └── __main__.py    # CLI entry point with argparse subcommands
 ```
 

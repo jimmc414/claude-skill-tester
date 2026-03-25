@@ -73,6 +73,7 @@ def main(argv: list[str] | None = None) -> None:
     p_run.add_argument("--timeout", type=int, default=120, help="Timeout per query in seconds")
     p_run.add_argument("--output", type=Path, help="Write markdown report to file")
     p_run.add_argument("--backend", choices=_BACKEND_CHOICES, default="auto", help=_BACKEND_HELP)
+    p_run.add_argument("--diagnose", action="store_true", help="Diagnose failures (explains why queries missed)")
 
     # quick
     p_quick = sub.add_parser("quick", help="Generate + run in one step")
@@ -82,6 +83,7 @@ def main(argv: list[str] | None = None) -> None:
     p_quick.add_argument("--timeout", type=int, default=120, help="Timeout per query in seconds")
     p_quick.add_argument("--output", type=Path, help="Write markdown report to file")
     p_quick.add_argument("--backend", choices=_BACKEND_CHOICES, default="auto", help=_BACKEND_HELP)
+    p_quick.add_argument("--diagnose", action="store_true", help="Diagnose failures (explains why queries missed)")
 
     # optimize
     p_opt = sub.add_parser("optimize", help="Optimize skill frontmatter for trigger accuracy")
@@ -94,6 +96,7 @@ def main(argv: list[str] | None = None) -> None:
     p_opt.add_argument("--backend", choices=_BACKEND_CHOICES, default="auto", help=_BACKEND_HELP)
     p_opt.add_argument("--dry-run", action="store_true", help="Show proposed changes without writing")
     p_opt.add_argument("--output", type=Path, help="Write optimization report to markdown file")
+    p_opt.add_argument("--no-diagnose", action="store_true", help="Disable failure diagnostics (on by default)")
 
     # discover
     p_disc = sub.add_parser("discover", help="List installed Skill-tool skills")
@@ -175,7 +178,10 @@ def _cmd_run(args: argparse.Namespace) -> None:
     skill, cases = load_test_suite(args.test_suite)
     print(f"Running {len(cases)} tests for skill: {skill.name} (backend: {args.backend})\n", file=sys.stderr)
 
-    results = run_suite(cases, skill.name, timeout=args.timeout, backend=args.backend)
+    results = run_suite(
+        cases, skill.name, timeout=args.timeout, backend=args.backend,
+        diagnose=args.diagnose, skill_info=skill,
+    )
     card = score(results)
     print_report(skill, results, card)
 
@@ -202,7 +208,10 @@ def _cmd_quick(args: argparse.Namespace) -> None:
     cases = generate_tests(skill, n_positive=args.positive, n_negative=args.negative, backend=args.backend)
 
     print(f"\nRunning {len(cases)} tests...\n", file=sys.stderr)
-    results = run_suite(cases, skill.name, timeout=args.timeout, backend=run_backend)
+    results = run_suite(
+        cases, skill.name, timeout=args.timeout, backend=run_backend,
+        diagnose=args.diagnose, skill_info=skill,
+    )
     card = score(results)
     print_report(skill, results, card)
 
@@ -234,6 +243,7 @@ def _cmd_optimize(args: argparse.Namespace) -> None:
         timeout=args.timeout,
         backend=args.backend,
         dry_run=args.dry_run,
+        diagnose=not args.no_diagnose,
     )
     print_optimization_report(result)
 

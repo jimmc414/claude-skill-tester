@@ -12,6 +12,7 @@ from .models import (
     ScoreCard,
     SkillInfo,
     TestCase,
+    TestResult,
 )
 from .parser import parse_skill, rewrite_frontmatter
 from .runner import run_suite
@@ -37,6 +38,8 @@ FALSE NEGATIVES — these queries SHOULD have triggered the skill but DIDN'T:
 
 FALSE POSITIVES — these queries should NOT have triggered but DID:
 {fp_list}
+
+{diagnostics_section}
 
 TRUE POSITIVES — these queries correctly triggered (preserve these):
 {tp_list}
@@ -64,6 +67,7 @@ def optimize_skill(
     timeout: int = 120,
     backend: str = "cli",
     dry_run: bool = False,
+    diagnose: bool = True,
 ) -> OptimizationResult:
     skill_path = Path(skill_path).expanduser().resolve()
     skill = parse_skill(skill_path)
@@ -108,12 +112,17 @@ def optimize_skill(
 
         # Run suite (always cli or sdk — trigger detection needs Claude Code)
         print(f"  Running {len(all_cases)} tests ({len(regression_cases)} regression)...", file=sys.stderr, flush=True)
-        results = run_suite(all_cases, skill.name, timeout=timeout, backend=run_backend)
+        results = run_suite(
+            all_cases, skill.name, timeout=timeout, backend=run_backend,
+            diagnose=diagnose, skill_info=skill,
+        )
         card = score(results)
 
-        # Collect failures
-        fn_queries = [r.case.query for r in results if r.case.expect_trigger and not r.triggered and not r.error]
-        fp_queries = [r.case.query for r in results if not r.case.expect_trigger and r.triggered and not r.error]
+        # Collect failures (with diagnostic context)
+        fn_results = [r for r in results if r.case.expect_trigger and not r.triggered and not r.error]
+        fp_results = [r for r in results if not r.case.expect_trigger and r.triggered and not r.error]
+        fn_queries = [r.case.query for r in fn_results]
+        fp_queries = [r.case.query for r in fp_results]
         tp_queries = [r.case.query for r in results if r.case.expect_trigger and r.triggered and not r.error]
 
         round_data = OptimizationRound(
@@ -152,7 +161,8 @@ def optimize_skill(
         # Propose improvements
         print("  Proposing improved frontmatter...", file=sys.stderr, flush=True)
         new_desc, new_wtu, name_suggestion = _propose_improvements(
-            skill, card, fn_queries, fp_queries, tp_queries, backend
+            skill, card, fn_queries, fp_queries, tp_queries, backend,
+            fn_results=fn_results, fp_results=fp_results,
         )
         round_data.name_suggestion = name_suggestion
         result.rounds.append(round_data)
@@ -199,10 +209,14 @@ def _propose_improvements(
     fp_queries: list[str],
     tp_queries: list[str],
     backend: str,
+    fn_results: list[TestResult] | None = None,
+    fp_results: list[TestResult] | None = None,
 ) -> tuple[str, str, str | None]:
     fn_list = "\n".join(f'  - "{q}"' for q in fn_queries) if fn_queries else "  (none)"
     fp_list = "\n".join(f'  - "{q}"' for q in fp_queries) if fp_queries else "  (none)"
     tp_list = "\n".join(f'  - "{q}"' for q in tp_queries) if tp_queries else "  (none)"
+
+    diagnostics_section = _format_diagnostics(fn_results or [], fp_results or [])
 
     prompt = _OPTIMIZATION_PROMPT.format(
         name=skill.name,
@@ -214,6 +228,7 @@ def _propose_improvements(
         fn_list=fn_list,
         fp_list=fp_list,
         tp_list=tp_list,
+        diagnostics_section=diagnostics_section,
     )
 
     text = call_claude(prompt, backend)
@@ -235,6 +250,23 @@ def _propose_improvements(
         new_desc = new_desc[:1021] + "..."
 
     return new_desc, new_wtu, name_suggestion
+
+
+def _format_diagnostics(fn_results: list[TestResult], fp_results: list[TestResult]) -> str:
+    """Format diagnostic details for the optimization prompt."""
+    lines = []
+    diagnosed = [r for r in fn_results + fp_results if r.diagnosis or r.rival_skill]
+    if not diagnosed:
+        return ""
+    lines.append("DIAGNOSTIC DETAILS (from failure analysis):")
+    for r in diagnosed:
+        direction = "FN" if r.case.expect_trigger else "FP"
+        lines.append(f'  {direction}: "{r.case.query}"')
+        if r.rival_skill:
+            lines.append(f"    RIVAL: {r.rival_skill}")
+        if r.diagnosis:
+            lines.append(f"    REASON: {r.diagnosis}")
+    return "\n".join(lines)
 
 
 def _backup_skill(path: Path) -> Path:

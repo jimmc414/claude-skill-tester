@@ -57,6 +57,10 @@ def print_report(
             idx = results.index(r) + 1
             direction = "Expected TRIG but SKIP" if r.case.expect_trigger else "Expected SKIP but TRIG"
             w(f"    #{idx} {direction} -- \"{r.case.query}\"\n")
+            if r.rival_skill:
+                w(f"         Rival: {r.rival_skill}\n")
+            if r.diagnosis:
+                w(f"         Reason: {r.diagnosis}\n")
 
     w("\n")
 
