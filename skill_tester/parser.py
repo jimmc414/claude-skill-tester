@@ -24,11 +24,14 @@ def parse_skill(path: Path) -> SkillInfo:
         raise ValueError(f"SKILL.md missing required 'name' field: {path}")
     description = meta.get("description", "")
 
+    when_to_use = meta.get("when_to_use", "")
+
     return SkillInfo(
         name=name,
         description=description,
         path=path,
         body=body.strip(),
+        when_to_use=when_to_use,
         trigger_phrases=_extract_trigger_phrases(description),
     )
 
@@ -74,6 +77,19 @@ def discover_skills(skills_dir: Path | None = None) -> list[SkillInfo]:
             except (ValueError, FileNotFoundError):
                 continue
     return found
+
+
+def rewrite_frontmatter(path: Path, description: str, when_to_use: str) -> None:
+    path = Path(path).expanduser().resolve()
+    text = path.read_text(encoding="utf-8")
+    fm_str, body = _split_frontmatter(text)
+
+    meta = yaml.safe_load(fm_str) or {}
+    meta["description"] = description
+    meta["when_to_use"] = when_to_use
+
+    new_fm = yaml.dump(meta, default_flow_style=False, sort_keys=False, allow_unicode=True).strip()
+    path.write_text(f"---\n{new_fm}\n---{body}", encoding="utf-8")
 
 
 def _split_frontmatter(text: str) -> tuple[str, str]:

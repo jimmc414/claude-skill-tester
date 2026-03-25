@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from .models import ScoreCard, SkillInfo, TestResult
+from .models import OptimizationResult, ScoreCard, SkillInfo, TestResult
 
 
 def print_report(
@@ -89,6 +89,54 @@ def write_markdown(
     a(f"\n**Total cost:** ${total_cost:.4f}")
 
     Path(path).write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def print_optimization_report(result: OptimizationResult, file=sys.stdout) -> None:
+    w = file.write
+
+    status = "CONVERGED" if result.converged else "DID NOT CONVERGE"
+    w(f"\nOptimization: {result.skill_name} ({status})\n")
+    w(f"Target: F1 >= {result.target_f1:.2f}\n")
+    w("=" * 50 + "\n\n")
+
+    prev_f1 = 0.0
+    for rd in result.rounds:
+        delta = f"  [+{rd.score.f1 - prev_f1:.2f}]" if prev_f1 > 0 else ""
+        w(f"Round {rd.round_num}: F1 = {rd.score.f1:.2f} {rd.score.verdict}{delta}\n")
+        if rd.false_negatives:
+            fn_str = ", ".join(f'"{_truncate(q, 50)}"' for q in rd.false_negatives[:3])
+            more = f" (+{len(rd.false_negatives) - 3} more)" if len(rd.false_negatives) > 3 else ""
+            w(f"  FN ({len(rd.false_negatives)}): {fn_str}{more}\n")
+        if rd.false_positives:
+            fp_str = ", ".join(f'"{_truncate(q, 50)}"' for q in rd.false_positives[:3])
+            more = f" (+{len(rd.false_positives) - 3} more)" if len(rd.false_positives) > 3 else ""
+            w(f"  FP ({len(rd.false_positives)}): {fp_str}{more}\n")
+        if rd.num_regression_cases > 0:
+            w(f"  Regression cases: {rd.num_regression_cases}\n")
+        if rd.name_suggestion:
+            w(f"  Name suggestion: {rd.name_suggestion}\n")
+        prev_f1 = rd.score.f1
+        w("\n")
+
+    w("Frontmatter changes:\n")
+    w(f"  name: {result.skill_name}\n")
+
+    if result.original_description != result.final_description:
+        w(f"  description:\n")
+        w(f"    BEFORE: \"{_truncate(result.original_description, 120)}\"\n")
+        w(f"    AFTER:  \"{_truncate(result.final_description, 120)}\"\n")
+    else:
+        w(f"  description: (unchanged)\n")
+
+    if result.original_when_to_use != result.final_when_to_use:
+        before = result.original_when_to_use or "(not set)"
+        w(f"  when_to_use:\n")
+        w(f"    BEFORE: \"{_truncate(before, 120)}\"\n")
+        w(f"    AFTER:  \"{_truncate(result.final_when_to_use, 120)}\"\n")
+    else:
+        w(f"  when_to_use: (unchanged)\n")
+
+    w("\n")
 
 
 def _truncate(s: str, maxlen: int) -> str:

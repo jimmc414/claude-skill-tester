@@ -10,6 +10,7 @@ class SkillInfo:
     description: str
     path: Path
     body: str = ""
+    when_to_use: str = ""
     trigger_phrases: list[str] = field(default_factory=list)
 
 
@@ -67,3 +68,28 @@ class ScoreCard:
         if self.f1 >= 0.75:
             return "GOOD"
         return "NEEDS_WORK"
+
+
+@dataclass
+class OptimizationRound:
+    round_num: int
+    description: str
+    when_to_use: str
+    score: ScoreCard
+    false_negatives: list[str] = field(default_factory=list)
+    false_positives: list[str] = field(default_factory=list)
+    num_regression_cases: int = 0
+    name_suggestion: str | None = None
+
+
+@dataclass
+class OptimizationResult:
+    skill_name: str
+    skill_path: Path
+    original_description: str
+    original_when_to_use: str
+    final_description: str
+    final_when_to_use: str
+    rounds: list[OptimizationRound] = field(default_factory=list)
+    converged: bool = False
+    target_f1: float = 0.90

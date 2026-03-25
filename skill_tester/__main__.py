@@ -45,6 +45,18 @@ def main(argv: list[str] | None = None) -> None:
     p_quick.add_argument("--output", type=Path, help="Write markdown report to file")
     p_quick.add_argument("--backend", choices=["cli", "sdk"], default="cli", help=_BACKEND_HELP)
 
+    # optimize
+    p_opt = sub.add_parser("optimize", help="Optimize skill frontmatter for trigger accuracy")
+    p_opt.add_argument("skill_path", type=Path, help="Path to skill directory or SKILL.md")
+    p_opt.add_argument("--target-f1", type=float, default=0.90, help="Target F1 score (default: 0.90)")
+    p_opt.add_argument("--max-rounds", type=int, default=5, help="Maximum optimization rounds (default: 5)")
+    p_opt.add_argument("--positive", type=int, default=10, help="Positive queries per round")
+    p_opt.add_argument("--negative", type=int, default=5, help="Negative queries per round")
+    p_opt.add_argument("--timeout", type=int, default=120, help="Timeout per query in seconds")
+    p_opt.add_argument("--backend", choices=["cli", "sdk"], default="cli", help=_BACKEND_HELP)
+    p_opt.add_argument("--dry-run", action="store_true", help="Show proposed changes without writing")
+    p_opt.add_argument("--output", type=Path, help="Write optimization report to markdown file")
+
     # discover
     p_disc = sub.add_parser("discover", help="List installed Skill-tool skills")
     p_disc.add_argument("--skills-dir", type=Path, help="Skills directory (default: ~/.claude/skills)")
@@ -63,6 +75,8 @@ def main(argv: list[str] | None = None) -> None:
         _cmd_run(args)
     elif args.command == "quick":
         _cmd_quick(args)
+    elif args.command == "optimize":
+        _cmd_optimize(args)
     elif args.command == "discover":
         _cmd_discover(args)
 
@@ -131,6 +145,33 @@ def _cmd_quick(args: argparse.Namespace) -> None:
 
     if args.output:
         write_markdown(args.output, skill, results, card)
+        print(f"Report written to {args.output}", file=sys.stderr)
+
+
+def _cmd_optimize(args: argparse.Namespace) -> None:
+    from .optimizer import optimize_skill
+    from .reporter import print_optimization_report
+
+    mode = "DRY RUN" if args.dry_run else "LIVE"
+    print(f"Optimizing skill ({mode}, target F1 >= {args.target_f1}, max {args.max_rounds} rounds)", file=sys.stderr)
+
+    result = optimize_skill(
+        skill_path=args.skill_path,
+        target_f1=args.target_f1,
+        max_rounds=args.max_rounds,
+        n_positive=args.positive,
+        n_negative=args.negative,
+        timeout=args.timeout,
+        backend=args.backend,
+        dry_run=args.dry_run,
+    )
+    print_optimization_report(result)
+
+    if args.output:
+        from .reporter import write_markdown
+        # Write a summary markdown
+        with open(args.output, "w") as f:
+            print_optimization_report(result, file=f)
         print(f"Report written to {args.output}", file=sys.stderr)
 
 

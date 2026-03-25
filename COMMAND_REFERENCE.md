@@ -166,6 +166,81 @@ Generate test queries and run them in one step. No intermediate YAML file. Use t
 skill-test quick ~/.claude/skills/repo-retrospective/ --positive 5 --negative 3
 ```
 
+### `skill-test optimize <skill_path> [options]`
+
+Closed-loop optimizer. Tests the skill, analyzes failures, rewrites the `description` and `when_to_use` frontmatter fields, retests, and iterates until the target F1 is reached or rounds are exhausted.
+
+Three frontmatter fields together determine whether Claude invokes a skill:
+- `name` — the skill identifier
+- `description` — what it does and when to use it (max 1024 chars)
+- `when_to_use` — detailed trigger conditions, phrases, and exclusions
+
+The optimizer rewrites `description` and `when_to_use` each round. It analyzes the `name` but does not auto-rename (suggests only).
+
+**Arguments:**
+- `skill_path` — Path to skill directory or SKILL.md
+
+**Options:**
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--target-f1` | `0.90` | F1 score to reach before stopping |
+| `--max-rounds` | `5` | Maximum optimization rounds |
+| `--positive` | `10` | Positive queries generated per round |
+| `--negative` | `5` | Negative queries generated per round |
+| `--timeout` | `120` | Timeout per query in seconds |
+| `--backend` | `cli` | `cli` or `sdk` |
+| `--dry-run` | off | Show proposed changes without writing to SKILL.md |
+| `--output` | (none) | Write optimization report to file |
+
+**Example:**
+```bash
+# Dry run — see what would change
+skill-test optimize ~/.claude/skills/my-skill/ --dry-run
+
+# Live optimization
+skill-test optimize ~/.claude/skills/my-skill/ --max-rounds 3 --target-f1 0.90
+```
+
+**How each round works:**
+1. Generate fresh test queries from the current description
+2. Merge in regression cases (all false negatives/positives from prior rounds)
+3. Run the suite, compute F1
+4. If F1 >= target: stop (converged)
+5. Analyze failures: collect FN queries (should trigger but didn't) and FP queries (shouldn't trigger but did)
+6. Call Claude with the full trigger surface (name + description + when_to_use) plus failure analysis
+7. Claude proposes improved `description` + `when_to_use` (and optionally a name suggestion)
+8. Write the updated frontmatter to SKILL.md (backup created on first round as `SKILL.md.bak`)
+9. Re-parse and loop
+
+**Anti-overfitting:** Fresh test cases are generated each round from the new description, but all previous failures are carried forward as mandatory regression tests. The optimizer can't narrow the description to dodge old failures.
+
+**Output:**
+```
+Optimization: my-skill (CONVERGED)
+Target: F1 >= 0.90
+==================================================
+
+Round 1: F1 = 0.67 NEEDS_WORK
+  FN (3): "Review our AI documentation", "Check docs for gaps", ...
+  FP (1): "Do a sprint retrospective"
+
+Round 2: F1 = 0.87 GOOD  [+0.20]
+  FN (1): "Verify onboard accuracy against code"
+  FP (0): none
+  Regression cases: 4
+
+Round 3: F1 = 0.93 OPTIMAL  [+0.06]
+
+Frontmatter changes:
+  name: my-skill
+  description:
+    BEFORE: "Original description text..."
+    AFTER:  "Improved description with trigger phrases..."
+  when_to_use:
+    BEFORE: (not set)
+    AFTER:  "Triggers: 'review docs', 'audit files'. Do NOT use for: ..."
+```
+
 ### `skill-test discover [options]`
 
 List all installed Skill-tool skills (directories containing `SKILL.md` with a `name:` field).
@@ -268,13 +343,13 @@ skill-test generate path/to/my-skill/ -o tests.yaml --positive 15 --negative 10
 skill-test run tests.yaml --output report.md
 ```
 
-### Iterate on a skill description
+### Auto-optimize a skill's trigger accuracy
 ```bash
-# Run test, note low recall
-skill-test quick path/to/my-skill/
-# Edit SKILL.md description to add more trigger phrases
-# Re-run
-skill-test quick path/to/my-skill/
+# Preview what the optimizer would change
+skill-test optimize path/to/my-skill/ --dry-run
+
+# Run live optimization (rewrites SKILL.md, creates .bak backup)
+skill-test optimize path/to/my-skill/ --max-rounds 3 --target-f1 0.90
 ```
 
 ### Find all testable skills
@@ -286,12 +361,13 @@ skill-test discover
 
 ```
 skill_tester/
-├── models.py      # SkillInfo, TestCase, TestResult, ScoreCard dataclasses
-├── parser.py      # parse_skill(), load_test_suite(), discover_skills()
+├── models.py      # SkillInfo, TestCase, TestResult, ScoreCard, OptimizationRound/Result
+├── parser.py      # parse_skill(), load_test_suite(), discover_skills(), rewrite_frontmatter()
 ├── generator.py   # generate_tests() via CLI or SDK, save_test_suite()
 ├── runner.py      # run_test(), run_suite() via CLI or SDK
 ├── scorer.py      # score() — confusion matrix from results
-├── reporter.py    # print_report(), write_markdown()
+├── reporter.py    # print_report(), write_markdown(), print_optimization_report()
+├── optimizer.py   # optimize_skill() — closed-loop description optimizer
 └── __main__.py    # CLI entry point with argparse subcommands
 ```
 
@@ -318,6 +394,7 @@ print_report(skill, results, card)
 **SkillInfo** — parsed from SKILL.md:
 - `name: str` — skill name from frontmatter (used for detection matching)
 - `description: str` — skill description from frontmatter
+- `when_to_use: str` — trigger conditions from frontmatter `when_to_use` field
 - `path: Path` — filesystem path to the SKILL.md
 - `body: str` — markdown content after frontmatter
 - `trigger_phrases: list[str]` — extracted from description text
