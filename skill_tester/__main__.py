@@ -7,19 +7,28 @@ from pathlib import Path
 from . import __version__
 
 _BACKEND_HELP = (
-    'Backend: "cli" uses claude -p (OAuth), "sdk" uses Claude Agent SDK, '
-    '"api" uses Anthropic API key (ANTHROPIC_API_KEY env var). '
-    'Default: cli, falls back to api if claude CLI auth is unavailable.'
+    'Backend: "sdk" (Claude Agent SDK), "cli" (claude -p), or "api" (ANTHROPIC_API_KEY). '
+    'Default "auto": tries sdk -> cli -> api in order.'
 )
-_BACKEND_CHOICES = ["cli", "sdk", "api"]
+_BACKEND_CHOICES = ["auto", "sdk", "cli", "api"]
 
 
 def _resolve_backend(requested: str) -> str:
-    """Resolve backend, falling back to 'api' if CLI auth is unavailable."""
-    if requested != "cli":
+    """Resolve backend. 'auto' tries sdk -> cli -> api."""
+    if requested != "auto":
         return requested
-    # Check if claude CLI is available and authenticated
+
+    import os
     import subprocess
+
+    # 1. Try Agent SDK
+    try:
+        import claude_agent_sdk  # noqa: F401
+        return "sdk"
+    except ImportError:
+        pass
+
+    # 2. Try claude CLI
     try:
         proc = subprocess.run(
             ["claude", "--version"],
@@ -29,12 +38,13 @@ def _resolve_backend(requested: str) -> str:
             return "cli"
     except (FileNotFoundError, subprocess.TimeoutExpired):
         pass
-    # CLI not available — try api fallback
-    import os
+
+    # 3. Try Anthropic API key
     if os.environ.get("ANTHROPIC_API_KEY"):
-        print("  claude CLI unavailable, falling back to --backend api", file=sys.stderr)
         return "api"
-    return "cli"  # let it fail with a clear error later
+
+    # Nothing found — default to cli and let it fail with a clear error
+    return "cli"
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -55,14 +65,14 @@ def main(argv: list[str] | None = None) -> None:
     p_gen.add_argument("-o", "--output", type=Path, default=Path("tests.yaml"), help="Output YAML path")
     p_gen.add_argument("--positive", type=int, default=10, help="Number of positive queries")
     p_gen.add_argument("--negative", type=int, default=5, help="Number of negative queries")
-    p_gen.add_argument("--backend", choices=_BACKEND_CHOICES, default="cli", help=_BACKEND_HELP)
+    p_gen.add_argument("--backend", choices=_BACKEND_CHOICES, default="auto", help=_BACKEND_HELP)
 
     # run
     p_run = sub.add_parser("run", help="Execute a saved test suite")
     p_run.add_argument("test_suite", type=Path, help="Path to test suite YAML")
     p_run.add_argument("--timeout", type=int, default=120, help="Timeout per query in seconds")
     p_run.add_argument("--output", type=Path, help="Write markdown report to file")
-    p_run.add_argument("--backend", choices=_BACKEND_CHOICES, default="cli", help=_BACKEND_HELP)
+    p_run.add_argument("--backend", choices=_BACKEND_CHOICES, default="auto", help=_BACKEND_HELP)
 
     # quick
     p_quick = sub.add_parser("quick", help="Generate + run in one step")
@@ -71,7 +81,7 @@ def main(argv: list[str] | None = None) -> None:
     p_quick.add_argument("--negative", type=int, default=5, help="Number of negative queries")
     p_quick.add_argument("--timeout", type=int, default=120, help="Timeout per query in seconds")
     p_quick.add_argument("--output", type=Path, help="Write markdown report to file")
-    p_quick.add_argument("--backend", choices=_BACKEND_CHOICES, default="cli", help=_BACKEND_HELP)
+    p_quick.add_argument("--backend", choices=_BACKEND_CHOICES, default="auto", help=_BACKEND_HELP)
 
     # optimize
     p_opt = sub.add_parser("optimize", help="Optimize skill frontmatter for trigger accuracy")
@@ -81,7 +91,7 @@ def main(argv: list[str] | None = None) -> None:
     p_opt.add_argument("--positive", type=int, default=10, help="Positive queries per round")
     p_opt.add_argument("--negative", type=int, default=5, help="Negative queries per round")
     p_opt.add_argument("--timeout", type=int, default=120, help="Timeout per query in seconds")
-    p_opt.add_argument("--backend", choices=_BACKEND_CHOICES, default="cli", help=_BACKEND_HELP)
+    p_opt.add_argument("--backend", choices=_BACKEND_CHOICES, default="auto", help=_BACKEND_HELP)
     p_opt.add_argument("--dry-run", action="store_true", help="Show proposed changes without writing")
     p_opt.add_argument("--output", type=Path, help="Write optimization report to markdown file")
 
