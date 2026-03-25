@@ -14,25 +14,32 @@ Given any skill with a `SKILL.md` file (containing a `name:` field in YAML front
 ## Prerequisites
 
 - Python >= 3.11
-- `claude` CLI installed and authenticated (for `--backend cli`, the default)
-- `claude-agent-sdk` package installed (for `--backend sdk`)
+- At least one backend available (see Backends below)
 - The skill under test must be installed in `~/.claude/skills/` as a directory containing `SKILL.md` with a `name:` field in frontmatter
 
 ## Installation
 
 ```bash
 pip install -e .            # core (CLI backend only)
-pip install -e ".[sdk]"     # with Agent SDK backend support
+pip install -e ".[sdk]"     # + Claude Agent SDK backend
+pip install -e ".[api]"     # + Anthropic API key backend
+pip install -e ".[all]"     # all backends
 ```
 
 ## Backends
 
-All commands that call Claude accept `--backend cli|sdk`:
+All commands that call Claude accept `--backend auto|sdk|cli|api`:
 
-| Backend | How it works | Auth | When to use |
-|---------|-------------|------|-------------|
-| `cli` (default) | Runs `claude -p "query" --output-format json` as a subprocess | Uses existing `claude` CLI auth (OAuth, subscription) | Default. No extra setup needed if `claude` works. |
-| `sdk` | Uses `claude_agent_sdk.query()` async API | Uses Claude Code session token or CLI auth | When you want programmatic control or are building on the Agent SDK. |
+| Backend | How it works | Auth |
+|---------|-------------|------|
+| `auto` (default) | Tries sdk -> cli -> api in order | Uses first available |
+| `sdk` | `claude_agent_sdk.query()` async API | Claude Code session token |
+| `cli` | `claude -p "query" --output-format json` subprocess | Claude CLI auth (OAuth, subscription) |
+| `api` | Anthropic Python SDK directly | `ANTHROPIC_API_KEY` env var |
+
+Trigger detection (the "did the skill fire?" check) requires the Claude Code runtime. When `--backend api` is selected, inference (test generation, optimization) uses the API, but test runs fall back to `cli`.
+
+When using `--backend sdk`, trigger detection uses `ToolUseBlock` objects in `AssistantMessage.content`.
 
 ## Commands
 
@@ -69,7 +76,7 @@ Auto-generate a test suite for a skill by calling Claude to produce diverse posi
 | `-o, --output` | `tests.yaml` | Output YAML file path |
 | `--positive` | `10` | Number of positive queries (should trigger) |
 | `--negative` | `5` | Number of negative queries (should not trigger) |
-| `--backend` | `cli` | `cli` or `sdk` |
+| `--backend` | `auto` | `auto`, `sdk`, `cli`, or `api` |
 
 **Example:**
 ```bash
@@ -112,7 +119,7 @@ Execute a saved test suite. Each query is sent to Claude and the output is inspe
 |------|---------|-------------|
 | `--timeout` | `120` | Timeout per query in seconds |
 | `--output` | (none) | Write a markdown report to this file path |
-| `--backend` | `cli` | `cli` or `sdk` |
+| `--backend` | `auto` | `auto`, `sdk`, `cli`, or `api` |
 
 **Example:**
 ```bash
@@ -159,7 +166,7 @@ Generate test queries and run them in one step. No intermediate YAML file. Use t
 | `--negative` | `5` | Number of negative queries |
 | `--timeout` | `120` | Timeout per query in seconds |
 | `--output` | (none) | Write markdown report to file |
-| `--backend` | `cli` | `cli` or `sdk` |
+| `--backend` | `auto` | `auto`, `sdk`, `cli`, or `api` |
 
 **Example:**
 ```bash
@@ -188,7 +195,7 @@ The optimizer rewrites `description` and `when_to_use` each round. It analyzes t
 | `--positive` | `10` | Positive queries generated per round |
 | `--negative` | `5` | Negative queries generated per round |
 | `--timeout` | `120` | Timeout per query in seconds |
-| `--backend` | `cli` | `cli` or `sdk` |
+| `--backend` | `auto` | `auto`, `sdk`, `cli`, or `api` |
 | `--dry-run` | off | Show proposed changes without writing to SKILL.md |
 | `--output` | (none) | Write optimization report to file |
 
@@ -283,8 +290,6 @@ When Claude auto-triggers a skill, the JSON output from `claude -p --output-form
 ```
 
 The runner scans all `assistant` events for a `tool_use` block where `name == "Skill"` and `input.skill` matches the target skill name. This is a binary check — the skill either invoked or it didn't.
-
-When using `--backend sdk`, the same detection applies via `ToolUseBlock` objects in `AssistantMessage.content`.
 
 ## Scoring
 
