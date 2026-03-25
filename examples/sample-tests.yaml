@@ -1,0 +1,46 @@
+skill:
+  path: ~/.claude/skills/repo-retrospective/
+  name: repo-retrospective
+
+cases:
+  # Positive: should trigger
+  - query: "Analyze my ONBOARD documents for gaps and inaccuracies"
+    expect_trigger: true
+    category: positive
+
+  - query: "Check if our AI onboarding documentation is complete"
+    expect_trigger: true
+    category: positive
+
+  - query: "Review the quality of our repo onboarding docs"
+    expect_trigger: true
+    category: positive
+
+  - query: "Run QA on the ONBOARD files against the actual codebase"
+    expect_trigger: true
+    category: positive
+
+  - query: "Are there any claims in our onboarding docs that don't match the code?"
+    expect_trigger: true
+    category: positive
+
+  # Negative: should NOT trigger
+  - query: "Help me write a Python web scraper"
+    expect_trigger: false
+    category: negative
+
+  - query: "What's the best way to set up a React project?"
+    expect_trigger: false
+    category: negative
+
+  - query: "Explain how async/await works in JavaScript"
+    expect_trigger: false
+    category: negative
+
+  - query: "Create a REST API endpoint for user authentication"
+    expect_trigger: false
+    category: negative
+
+  - query: "Help me debug this SQL query"
+    expect_trigger: false
+    category: negative
