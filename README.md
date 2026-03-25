@@ -1,6 +1,6 @@
 # claude-skill-tester
 
-Automated trigger testing and closed-loop optimization for Claude Code skills.
+Automated trigger testing and closed-loop optimization for Claude Code skills. Uses `claude -p` (CLI) or the Claude Agent SDK for all inference -- test generation, skill invocation detection, and frontmatter optimization.
 
 Point it at any SKILL.md. It generates test queries, runs them through Claude, measures whether the skill actually fires, and reports precision/recall/F1. If the score is low, the optimizer rewrites the frontmatter and retests until it converges.
 
@@ -20,7 +20,12 @@ description: What it does...      # primary trigger text (max 1024 chars)
 when_to_use: Trigger conditions...# additional trigger phrases and exclusions
 ```
 
-The tester sends queries to `claude -p --output-format json` and inspects the JSON event stream for `Skill` tool_use blocks. Detection is binary -- the skill either invoked or it didn't. No heuristics.
+All inference runs through one of two backends (selectable via `--backend`):
+
+- **`cli`** (default) -- invokes `claude -p "query" --output-format json` as a subprocess. Uses your existing Claude CLI auth.
+- **`sdk`** -- uses `claude_agent_sdk.query()` async API. Uses Claude Code session tokens.
+
+Both backends are used for test query generation, skill invocation testing, and optimization rewrites. The tester inspects the response event stream for `Skill` tool_use blocks. Detection is binary -- the skill either invoked or it didn't. No heuristics.
 
 The optimizer treats `description` + `when_to_use` as a prompt to be optimized against a test suite with regression protection.
 

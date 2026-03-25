@@ -2,7 +2,7 @@
 
 ## What this is
 
-An eval harness for Claude Code skill trigger accuracy with a closed-loop optimizer that rewrites skill frontmatter until the skill fires reliably.
+An eval harness for Claude Code skill trigger accuracy with a closed-loop optimizer that rewrites skill frontmatter until the skill fires reliably. All inference -- test generation, trigger detection, and optimization rewrites -- runs through `claude -p` (CLI) or the Claude Agent SDK. No direct Anthropic API key required.
 
 ## Why it exists
 
@@ -14,9 +14,16 @@ This tool makes it mechanical. Point it at a SKILL.md and get an F1 score. If th
 
 ## How it actually works
 
-**Detection.** Run `claude -p "query" --output-format json`. Parse the JSON event stream. Look for `{"type": "tool_use", "name": "Skill", "input": {"skill": "target-name"}}`. Binary. No heuristics, no content matching, no vibes.
+Every step uses Claude for inference via one of two backends (`--backend cli` or `--backend sdk`):
 
-**Test generation.** Feed the skill's `description` and `body` to Claude and ask for N queries that should trigger it and M that shouldn't. The queries are diverse (paraphrased, indirect, domain-specific) because the generation prompt explicitly asks for variation. Save to YAML for review.
+- **`cli`**: shells out to `claude -p "query" --output-format json`. Authenticates via your existing Claude CLI session (OAuth, subscription). Default.
+- **`sdk`**: calls `claude_agent_sdk.query()` directly. Authenticates via Claude Code session tokens. Useful for programmatic integration.
+
+No raw Anthropic API key is needed for either path. The same backend choice applies to test generation, trigger detection, and optimization rewrites.
+
+**Detection.** Send a query via the chosen backend. Parse the response event stream. Look for `{"type": "tool_use", "name": "Skill", "input": {"skill": "target-name"}}`. Binary. No heuristics, no content matching, no vibes.
+
+**Test generation.** Feed the skill's `description` and `body` to Claude (via the same backend) and ask for N queries that should trigger it and M that shouldn't. The queries are diverse (paraphrased, indirect, domain-specific) because the generation prompt explicitly asks for variation. Save to YAML for review.
 
 **Scoring.** Standard information retrieval metrics. Precision (when it triggers, is it right?), recall (of things that should trigger, how many did?), F1 (harmonic mean). Verdict thresholds: OPTIMAL >= 0.90, GOOD >= 0.75, NEEDS_WORK < 0.75.
 
