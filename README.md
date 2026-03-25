@@ -20,15 +20,15 @@ description: What it does...      # primary trigger text (max 1024 chars)
 when_to_use: Trigger conditions...# additional trigger phrases and exclusions
 ```
 
-All inference runs through one of two backends (selectable via `--backend`):
+All inference runs through one of three backends. The default (`auto`) tries them in order:
 
-- **`cli`** (default) -- invokes `claude -p "query" --output-format json` as a subprocess. Uses your existing Claude CLI auth (OAuth/subscription).
-- **`sdk`** -- uses `claude_agent_sdk.query()` async API. Uses Claude Code session tokens.
-- **`api`** -- uses the Anthropic Python SDK directly with `ANTHROPIC_API_KEY`. No Claude CLI or OAuth required.
+1. **`sdk`** -- Claude Agent SDK (`claude_agent_sdk.query()`). Preferred when available.
+2. **`cli`** -- `claude -p "query" --output-format json`. Uses existing CLI auth (OAuth/subscription).
+3. **`api`** -- Anthropic Python SDK with `ANTHROPIC_API_KEY` env var. No CLI or OAuth required.
 
-If `--backend cli` is selected but the CLI isn't available, the tool automatically falls back to `api` when `ANTHROPIC_API_KEY` is set.
+Override with `--backend sdk|cli|api` to force a specific one.
 
-All three backends are used for test query generation and optimization rewrites. Trigger detection (the actual "did the skill fire?" check) requires the Claude Code runtime, so `run` and the test phase of `quick`/`optimize` always use `cli` or `sdk` -- even when `api` is selected for inference.
+All three backends are used for test query generation and optimization rewrites. Trigger detection (the actual "did the skill fire?" check) requires the Claude Code runtime, so `run` and the test phase of `quick`/`optimize` always use `sdk` or `cli` -- even when `api` is selected for inference.
 
 The optimizer treats `description` + `when_to_use` as a prompt to be optimized against a test suite with regression protection.
 
@@ -62,7 +62,7 @@ Requires Python 3.11+ and the `claude` CLI installed and authenticated.
 | `skill-test optimize <path>` | Closed-loop: test, rewrite frontmatter, retest until F1 target |
 | `skill-test discover` | List all installed Skill-tool skills |
 
-All commands that call Claude accept `--backend cli` (default, uses `claude -p`) or `--backend sdk` (uses `claude-agent-sdk`).
+All commands that call Claude accept `--backend auto|sdk|cli|api` (default: `auto`, which tries sdk -> cli -> api).
 
 ## Optimizer
 
