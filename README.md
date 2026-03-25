@@ -55,12 +55,13 @@ Requires Python 3.11+ and the `claude` CLI installed and authenticated.
 
 | Command | What it does |
 |---------|-------------|
-| `skill-test parse <path>` | Parse SKILL.md, display name/description/when_to_use |
+| `skill-test parse <path>` | Parse SKILL.md, display name/description/when_to_use + health check |
 | `skill-test generate <path>` | Auto-generate positive + negative test queries to YAML |
 | `skill-test run <tests.yaml>` | Execute a test suite, report precision/recall/F1 |
-| `skill-test quick <path>` | Generate + run in one step |
+| `skill-test quick <path>` | Generate + run in one step (with health preamble) |
 | `skill-test optimize <path>` | Closed-loop: test, rewrite frontmatter, retest until F1 target |
-| `skill-test discover` | List all installed Skill-tool skills |
+| `skill-test discover` | List all installed Skill-tool skills with health grades |
+| `skill-test landscape` | Analyze skill ecosystem: budget consumption, health checks |
 
 All commands that call Claude accept `--backend auto|sdk|cli|api` (default: `auto`, which tries sdk -> cli -> api).
 
@@ -120,15 +121,28 @@ cases:
     category: negative
 ```
 
+## Frontmatter health checks
+
+`parse`, `quick`, `optimize`, and `landscape` run static analysis on skill frontmatter (no API calls). This catches structural issues that F1 scoring cannot detect.
+
+| Grade | Meaning |
+|-------|---------|
+| HEALTHY | No structural issues |
+| IMPROVABLE | Warnings — functional but suboptimal |
+| BROKEN | Errors — frontmatter won't work as intended |
+
+Checks include: missing `when_to_use`, hyphenated `when-to-use` (silently ignored by Claude), description exceeding 1024 chars, high redundancy between fields, and budget pressure. See [SKILL_FRONTMATTER.md](SKILL_FRONTMATTER.md) for empirical findings on which fields Claude loads.
+
 ## Project structure
 
 ```
 skill_tester/
-  models.py      # SkillInfo, TestCase, TestResult, ScoreCard, OptimizationRound/Result
+  models.py      # SkillInfo, TestCase, TestResult, ScoreCard, HealthCheck, FrontmatterHealth
   parser.py      # SKILL.md parsing, frontmatter rewriting, skill discovery
   generator.py   # test query generation via CLI or Agent SDK
   runner.py      # query execution + Skill tool_use detection
   scorer.py      # precision/recall/F1 from results
+  health.py      # static frontmatter analysis (budget, redundancy, field checks)
   reporter.py    # terminal and markdown reporting
   optimizer.py   # closed-loop frontmatter optimizer
   __main__.py    # CLI entry point

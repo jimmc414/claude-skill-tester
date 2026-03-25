@@ -99,6 +99,11 @@ def main(argv: list[str] | None = None) -> None:
     p_disc = sub.add_parser("discover", help="List installed Skill-tool skills")
     p_disc.add_argument("--skills-dir", type=Path, help="Skills directory (default: ~/.claude/skills)")
 
+    # landscape
+    p_land = sub.add_parser("landscape", help="Analyze skill ecosystem: budget, health, overlaps")
+    p_land.add_argument("--skills-dir", type=Path, help="Skills directory (default: ~/.claude/skills)")
+    p_land.add_argument("--budget", type=int, default=16000, help="Context budget in chars (default: 16000)")
+
     args = parser.parse_args(argv)
 
     if args.command is None:
@@ -117,17 +122,25 @@ def main(argv: list[str] | None = None) -> None:
         _cmd_optimize(args)
     elif args.command == "discover":
         _cmd_discover(args)
+    elif args.command == "landscape":
+        _cmd_landscape(args)
 
 
 def _cmd_parse(args: argparse.Namespace) -> None:
+    from .health import check_frontmatter
     from .parser import parse_skill
+    from .reporter import print_health
 
     skill = parse_skill(args.skill_path)
-    print(f"Name:        {skill.name}")
-    print(f"Path:        {skill.path}")
-    print(f"Description: {skill.description}")
+    print(f"Name:         {skill.name}")
+    print(f"Path:         {skill.path}")
+    print(f"Description:  {skill.description}")
+    if skill.when_to_use:
+        print(f"When to use:  {skill.when_to_use}")
     if skill.trigger_phrases:
-        print(f"Triggers:    {', '.join(skill.trigger_phrases)}")
+        print(f"Triggers:     {', '.join(skill.trigger_phrases)}")
+    print()
+    print_health(check_frontmatter(skill))
 
 
 def _cmd_generate(args: argparse.Namespace) -> None:
@@ -173,8 +186,9 @@ def _cmd_run(args: argparse.Namespace) -> None:
 
 def _cmd_quick(args: argparse.Namespace) -> None:
     from .generator import generate_tests
+    from .health import check_frontmatter
     from .parser import parse_skill
-    from .reporter import print_report, write_markdown
+    from .reporter import print_health, print_report, write_markdown
     from .runner import run_suite
     from .scorer import score
 
@@ -183,6 +197,7 @@ def _cmd_quick(args: argparse.Namespace) -> None:
     run_backend = "cli" if args.backend == "api" else args.backend
 
     skill = parse_skill(args.skill_path)
+    print_health(check_frontmatter(skill), file=sys.stderr)
     print(f"Generating tests for: {skill.name} (backend: {args.backend})", file=sys.stderr)
     cases = generate_tests(skill, n_positive=args.positive, n_negative=args.negative, backend=args.backend)
 
@@ -197,10 +212,15 @@ def _cmd_quick(args: argparse.Namespace) -> None:
 
 
 def _cmd_optimize(args: argparse.Namespace) -> None:
+    from .health import check_frontmatter
     from .optimizer import optimize_skill
-    from .reporter import print_optimization_report
+    from .parser import parse_skill
+    from .reporter import print_health, print_optimization_report
 
     args.backend = _resolve_backend(args.backend)
+
+    skill = parse_skill(args.skill_path)
+    print_health(check_frontmatter(skill), file=sys.stderr)
 
     mode = "DRY RUN" if args.dry_run else "LIVE"
     print(f"Optimizing skill ({mode}, target F1 >= {args.target_f1}, max {args.max_rounds} rounds)", file=sys.stderr)
@@ -226,6 +246,7 @@ def _cmd_optimize(args: argparse.Namespace) -> None:
 
 
 def _cmd_discover(args: argparse.Namespace) -> None:
+    from .health import check_frontmatter
     from .parser import discover_skills
 
     skills = discover_skills(args.skills_dir)
@@ -235,10 +256,29 @@ def _cmd_discover(args: argparse.Namespace) -> None:
 
     print(f"Found {len(skills)} skill(s):\n")
     for s in skills:
+        health = check_frontmatter(s)
         desc = s.description[:80] + "..." if len(s.description) > 80 else s.description
-        print(f"  {s.name}")
+        print(f"  {s.name} [{health.grade}]")
         print(f"    {desc}")
         print(f"    {s.path}\n")
+
+
+def _cmd_landscape(args: argparse.Namespace) -> None:
+    from .health import BUDGET_TOTAL, check_frontmatter
+    from .parser import discover_skills
+    from .reporter import print_landscape
+
+    if args.budget != BUDGET_TOTAL:
+        import skill_tester.health as h
+        h.BUDGET_TOTAL = args.budget
+
+    skills = discover_skills(args.skills_dir)
+    if not skills:
+        print("No Skill-tool skills found.")
+        return
+
+    healths = [check_frontmatter(s) for s in skills]
+    print_landscape(skills, healths)
 
 
 if __name__ == "__main__":

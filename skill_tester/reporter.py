@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from .models import OptimizationResult, ScoreCard, SkillInfo, TestResult
+from .models import FrontmatterHealth, OptimizationResult, ScoreCard, SkillInfo, TestResult
 
 
 def print_report(
@@ -137,6 +137,63 @@ def print_optimization_report(result: OptimizationResult, file=sys.stdout) -> No
         w(f"  when_to_use: (unchanged)\n")
 
     w("\n")
+
+
+def print_health(health: FrontmatterHealth, file=sys.stdout) -> None:
+    w = file.write
+    w(f"Frontmatter health: {health.grade}")
+    w(f"  ({health.context_cost} chars, {health.budget_pct:.1%} of budget)\n")
+    for c in health.checks:
+        w(f"  {c.level}: [{c.code}] {c.message}\n")
+    if not health.checks or all(c.level == "INFO" for c in health.checks):
+        w("\n")
+
+
+def print_landscape(
+    skills: list[SkillInfo],
+    healths: list[FrontmatterHealth],
+    file=sys.stdout,
+) -> None:
+    from .health import BUDGET_TOTAL
+
+    w = file.write
+    total_cost = sum(h.context_cost for h in healths)
+    total_pct = total_cost / BUDGET_TOTAL
+
+    w(f"\nSkill Landscape ({len(skills)} skills, {total_cost:,} / {BUDGET_TOTAL:,} chars = {total_pct:.1%})\n")
+    w("=" * 70 + "\n\n")
+
+    # Table header
+    w(f"  {'#':>3} | {'Name':<30} | {'Chars':>5} | {'Budget':>6} | Health\n")
+    w(f"  {'---':>3}-+-{'-' * 30}-+-{'-----':>5}-+-{'------':>6}-+--------\n")
+
+    for i, (s, h) in enumerate(zip(skills, healths), 1):
+        name = _truncate(s.name, 30)
+        w(f"  {i:>3} | {name:<30} | {h.context_cost:>5} | {h.budget_pct:>5.1%} | {h.grade}\n")
+
+    w("\n")
+
+    # Health issues
+    issues = [(h.skill_name, c) for h in healths for c in h.checks if c.level != "INFO"]
+    if issues:
+        w("Health issues:\n")
+        current_skill = None
+        for skill_name, check in issues:
+            if skill_name != current_skill:
+                w(f"  {skill_name}:\n")
+                current_skill = skill_name
+            w(f"    {check.level}: [{check.code}] {check.message}\n")
+        w("\n")
+
+    # Budget summary
+    w(f"Budget: {total_cost:,} / {BUDGET_TOTAL:,} chars ({total_pct:.1%})\n")
+    if healths:
+        largest = max(healths, key=lambda h: h.context_cost)
+        w(f"  Largest: {largest.skill_name} ({largest.context_cost} chars, {largest.budget_pct:.1%})\n")
+    broken = sum(1 for h in healths if h.grade == "BROKEN")
+    improvable = sum(1 for h in healths if h.grade == "IMPROVABLE")
+    healthy = sum(1 for h in healths if h.grade == "HEALTHY")
+    w(f"  Grades: {healthy} healthy, {improvable} improvable, {broken} broken\n\n")
 
 
 def _truncate(s: str, maxlen: int) -> str:

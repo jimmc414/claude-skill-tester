@@ -57,11 +57,16 @@ skill-test parse ~/.claude/skills/repo-retrospective/
 
 **Output:**
 ```
-Name:        repo-retrospective
-Path:        /home/user/.claude/skills/repo-retrospective/SKILL.md
-Description: Quality assurance for AI onboarding documentation. Analyzes ONBOARD documents...
-Triggers:    Quality assurance for AI onboarding documentation, Analyzes ONBOARD documents...
+Name:         repo-retrospective
+Path:         /home/user/.claude/skills/repo-retrospective/SKILL.md
+Description:  Quality assurance for AI onboarding documentation. Analyzes ONBOARD documents...
+Triggers:     Quality assurance for AI onboarding documentation, Analyzes ONBOARD documents...
+
+Frontmatter health: IMPROVABLE  (194 chars, 1.2% of budget)
+  WARN: [W1] No when_to_use field. Adding trigger phrases and exclusions...
 ```
+
+Health checks run automatically with no API calls. See [Frontmatter Health Checks](#frontmatter-health-checks) for details.
 
 ### `skill-test generate <skill_path> [options]`
 
@@ -266,14 +271,74 @@ skill-test discover
 ```
 Found 2 skill(s):
 
-  repo-retrospective
+  repo-retrospective [IMPROVABLE]
     Quality assurance for AI onboarding documentation...
     /home/user/.claude/skills/repo-retrospective/SKILL.md
 
-  code-review
+  code-review [HEALTHY]
     Automated code review for pull requests...
     /home/user/.claude/skills/code-review/SKILL.md
 ```
+
+### `skill-test landscape [options]`
+
+Analyze the full skill ecosystem: context budget consumption, frontmatter health, and structural issues. No API calls. Use this to understand how your skills compete for Claude's context budget.
+
+**Options:**
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--skills-dir` | `~/.claude/skills` | Directory to scan |
+| `--budget` | `16000` | Context budget in chars (override if context window differs) |
+
+**Example:**
+```bash
+skill-test landscape
+```
+
+**Output:**
+```
+Skill Landscape (12 skills, 4,832 / 16,000 chars = 30.2%)
+======================================================================
+
+    # | Name                           | Chars | Budget | Health
+  ----+--------------------------------+-------+--------+--------
+    1 | repo-retrospective             |   194 |  1.2%  | IMPROVABLE
+    2 | code-review                    |   312 |  2.0%  | HEALTHY
+   ...
+
+Health issues:
+  repo-retrospective:
+    WARN: [W1] No when_to_use field. Adding trigger phrases and exclusions...
+
+Budget: 4,832 / 16,000 chars (30.2%)
+  Largest: code-review (312 chars, 2.0%)
+  Grades: 10 healthy, 2 improvable, 0 broken
+```
+
+## Frontmatter Health Checks
+
+Static analysis of skill frontmatter quality. Runs automatically during `parse`, `quick`, `optimize`, and `landscape` with no API calls. This is separate from the F1-based trigger verdict — a skill can score OPTIMAL on F1 while having broken frontmatter.
+
+### Health Grades
+
+| Grade | Meaning |
+|-------|---------|
+| HEALTHY | No structural issues found |
+| IMPROVABLE | Warnings — functional but suboptimal |
+| BROKEN | Errors — frontmatter won't work as intended |
+
+### Checks
+
+| Code | Level | What it detects |
+|------|-------|-----------------|
+| E1 | ERROR | `when-to-use` (hyphenated) — silently ignored by Claude. Must use `when_to_use` (underscore) |
+| E2 | ERROR | `description` exceeds 1024 characters — may be truncated |
+| W1 | WARN | Missing `when_to_use` — leaves a second independent trigger surface unused |
+| W2 | WARN | High redundancy (>60%) between `description` and `when_to_use` — wastes budget |
+| W3 | WARN | Skill consumes >5% of ~16K context budget — budget pressure risk |
+| I1 | INFO | `description` and `when_to_use` are complementary (<30% overlap) — optimal |
+
+See [SKILL_FRONTMATTER.md](SKILL_FRONTMATTER.md) for the empirical research on which frontmatter fields Claude loads and how they influence skill selection.
 
 ## Detection Mechanism
 
@@ -366,12 +431,13 @@ skill-test discover
 
 ```
 skill_tester/
-├── models.py      # SkillInfo, TestCase, TestResult, ScoreCard, OptimizationRound/Result
+├── models.py      # SkillInfo, TestCase, TestResult, ScoreCard, HealthCheck, FrontmatterHealth
 ├── parser.py      # parse_skill(), load_test_suite(), discover_skills(), rewrite_frontmatter()
 ├── generator.py   # generate_tests() via CLI or SDK, save_test_suite()
 ├── runner.py      # run_test(), run_suite() via CLI or SDK
 ├── scorer.py      # score() — confusion matrix from results
-├── reporter.py    # print_report(), write_markdown(), print_optimization_report()
+├── health.py      # check_frontmatter() — static frontmatter analysis
+├── reporter.py    # print_report(), write_markdown(), print_health(), print_landscape()
 ├── optimizer.py   # optimize_skill() — closed-loop description optimizer
 └── __main__.py    # CLI entry point with argparse subcommands
 ```
@@ -421,6 +487,16 @@ print_report(skill, results, card)
 - `tp, fp, tn, fn: int` — confusion matrix counts
 - `precision, recall, f1: float` (properties) — computed metrics
 - `verdict: str` (property) — "OPTIMAL", "GOOD", or "NEEDS_WORK"
+
+**FrontmatterHealth** — static frontmatter analysis:
+- `skill_name: str` — the skill being analyzed
+- `context_cost: int` — characters consumed in Claude's context budget
+- `budget_pct: float` — percentage of ~16K budget
+- `has_when_to_use: bool` — whether `when_to_use` field is present
+- `has_hyphenated_when_to_use: bool` — whether broken `when-to-use` is present
+- `redundancy_score: float` — Jaccard similarity between description and when_to_use
+- `checks: list[HealthCheck]` — individual check results
+- `grade: str` (property) — "HEALTHY", "IMPROVABLE", or "BROKEN"
 
 ## Costs and Timing
 

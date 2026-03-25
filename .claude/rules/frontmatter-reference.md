@@ -1,0 +1,1 @@
+When making changes that involve skill frontmatter parsing, generation, optimization, or trigger detection, consult SKILL_FRONTMATTER.md for empirically verified facts about which fields Claude Code loads into context and how they influence skill matching.

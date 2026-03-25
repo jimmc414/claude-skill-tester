@@ -71,6 +71,33 @@ class ScoreCard:
 
 
 @dataclass
+class HealthCheck:
+    level: str  # "ERROR", "WARN", "INFO"
+    code: str  # "E1", "W1", etc.
+    message: str
+    field: str  # "when_to_use", "description", etc.
+
+
+@dataclass
+class FrontmatterHealth:
+    skill_name: str
+    context_cost: int
+    budget_pct: float
+    has_when_to_use: bool
+    has_hyphenated_when_to_use: bool
+    redundancy_score: float
+    checks: list[HealthCheck] = field(default_factory=list)
+
+    @property
+    def grade(self) -> str:
+        if any(c.level == "ERROR" for c in self.checks):
+            return "BROKEN"
+        if any(c.level == "WARN" for c in self.checks):
+            return "IMPROVABLE"
+        return "HEALTHY"
+
+
+@dataclass
 class OptimizationRound:
     round_num: int
     description: str
