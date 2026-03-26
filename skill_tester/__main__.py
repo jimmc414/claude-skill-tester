@@ -107,6 +107,15 @@ def main(argv: list[str] | None = None) -> None:
     p_land.add_argument("--skills-dir", type=Path, help="Skills directory (default: ~/.claude/skills)")
     p_land.add_argument("--budget", type=int, default=16000, help="Context budget in chars (default: 16000)")
 
+    # collide
+    p_collide = sub.add_parser("collide", help="Test for trigger collisions between skills")
+    p_collide.add_argument("skill_paths", nargs="+", type=Path, help="Paths to 2+ skill directories or SKILL.md files")
+    p_collide.add_argument("--clear", type=int, default=5, help="Clear queries per skill per pair (default: 5)")
+    p_collide.add_argument("--boundary", type=int, default=5, help="Boundary queries per pair (default: 5)")
+    p_collide.add_argument("--timeout", type=int, default=120, help="Timeout per query in seconds")
+    p_collide.add_argument("--backend", choices=_BACKEND_CHOICES, default="auto", help=_BACKEND_HELP)
+    p_collide.add_argument("--output", type=Path, help="Write collision report to file")
+
     args = parser.parse_args(argv)
 
     if args.command is None:
@@ -127,6 +136,8 @@ def main(argv: list[str] | None = None) -> None:
         _cmd_discover(args)
     elif args.command == "landscape":
         _cmd_landscape(args)
+    elif args.command == "collide":
+        _cmd_collide(args)
 
 
 def _cmd_parse(args: argparse.Namespace) -> None:
@@ -289,6 +300,31 @@ def _cmd_landscape(args: argparse.Namespace) -> None:
 
     healths = [check_frontmatter(s) for s in skills]
     print_landscape(skills, healths)
+
+
+def _cmd_collide(args: argparse.Namespace) -> None:
+    from .collider import collide
+    from .reporter import print_collision_report
+
+    if len(args.skill_paths) < 2:
+        print("Error: collide requires at least 2 skill paths", file=sys.stderr)
+        sys.exit(1)
+
+    args.backend = _resolve_backend(args.backend)
+
+    reports = collide(
+        skill_paths=args.skill_paths,
+        n_clear=args.clear,
+        n_boundary=args.boundary,
+        timeout=args.timeout,
+        backend=args.backend,
+    )
+    print_collision_report(reports)
+
+    if args.output:
+        with open(args.output, "w") as f:
+            print_collision_report(reports, file=f)
+        print(f"Report written to {args.output}", file=sys.stderr)
 
 
 if __name__ == "__main__":

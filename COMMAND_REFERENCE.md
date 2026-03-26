@@ -320,6 +320,78 @@ Budget: 4,832 / 16,000 chars (30.2%)
   Grades: 10 healthy, 2 improvable, 0 broken
 ```
 
+### `skill-test collide <paths...> [options]`
+
+Test for trigger collisions between two or more skills. For each pair, generates clear queries (obviously for one skill) and boundary queries (ambiguous), runs them through Claude, and reports which skills actually fire.
+
+**Arguments:**
+- `skill_paths` — Two or more paths to skill directories or SKILL.md files
+
+**Options:**
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--clear` | `5` | Clear queries per skill per pair |
+| `--boundary` | `5` | Boundary queries per pair |
+| `--timeout` | `120` | Timeout per query in seconds |
+| `--backend` | `auto` | `auto`, `sdk`, `cli`, or `api` |
+| `--output` | (none) | Write collision report to file |
+
+**Example:**
+```bash
+skill-test collide ~/.claude/skills/skill-a/ ~/.claude/skills/skill-b/ --clear 5 --boundary 3
+```
+
+**What it does per pair:**
+1. Reads both skills' frontmatter (name, description, when_to_use)
+2. Calls Claude to generate N clear-A queries, N clear-B queries, and M boundary queries
+3. Runs each query through Claude and detects ALL skills that fire (not just one target)
+4. Classifies each result: CORRECT, STOLEN (wrong skill on clear query), LEAKED (no skill on clear query), A-WINS, B-WINS, SHARED, NEITHER (boundary queries), or ERR
+5. Computes theft rate (fraction of clear queries stolen) and boundary agreement (fraction where both fire)
+6. Reports a verdict based on theft rate
+
+**Result labels:**
+| Label | Meaning |
+|-------|---------|
+| CORRECT | Clear query triggered its intended skill |
+| STOLEN | Clear query triggered the wrong skill |
+| LEAKED | Clear query triggered no skill |
+| A-WINS | Boundary query triggered only Skill A |
+| B-WINS | Boundary query triggered only Skill B |
+| SHARED | Boundary query triggered both skills |
+| NEITHER | Boundary query triggered no skill |
+| ERR | Query errored (timeout, CLI failure) |
+
+**Verdict thresholds (based on theft rate):**
+| Verdict | Theft Rate |
+|---------|------------|
+| CLEAN | 0% |
+| LOW | <= 15% |
+| MODERATE | <= 35% |
+| HIGH_COLLISION | > 35% |
+
+**Output:**
+```
+Collision Test: skill-a vs skill-b
+==========================================
+
+    # |   Type    | Intended             | Fired                     | Result
+  ----+-----------+----------------------+---------------------------+--------
+    1 |  clear-a  | skill-a              | skill-a                   | CORRECT
+    2 |  clear-a  | skill-a              | skill-a                   | CORRECT
+    3 |  clear-b  | skill-b              | skill-b                   | CORRECT
+    4 |  clear-b  | skill-b              | skill-a                   | STOLEN
+    5 | boundary  | skill-a              | skill-a, skill-b          | SHARED
+
+  Theft rate: 10%  Boundary agreement: 100%  Verdict: LOW
+
+  Stolen queries:
+    "review the documentation structure" intended=skill-b fired=skill-a
+
+  Cost: $1.2345  Time: 45.2s  Errors: 0
+```
+
+With 3+ skills, all pairs are tested and a summary table is printed at the end.
+
 ## Frontmatter Health Checks
 
 Static analysis of skill frontmatter quality. Runs automatically during `parse`, `quick`, `optimize`, and `landscape` with no API calls. This is separate from the F1-based trigger verdict — a skill can score OPTIMAL on F1 while having broken frontmatter.
@@ -456,15 +528,16 @@ skill-test discover
 
 ```
 skill_tester/
-├── models.py      # SkillInfo, TestCase, TestResult, ScoreCard, HealthCheck, FrontmatterHealth
+├── models.py      # SkillInfo, TestCase, TestResult, ScoreCard, HealthCheck, FrontmatterHealth, Collision*
 ├── parser.py      # parse_skill(), load_test_suite(), discover_skills(), rewrite_frontmatter()
 ├── generator.py   # generate_tests() via CLI or SDK, save_test_suite()
 ├── runner.py      # run_test(), run_suite() via CLI or SDK, rival capture
 ├── scorer.py      # score() — confusion matrix from results
 ├── health.py      # check_frontmatter() — static frontmatter analysis
 ├── diagnose.py    # diagnose_failures() — post-run semantic gap analysis
-├── reporter.py    # print_report(), write_markdown(), print_health(), print_landscape()
+├── reporter.py    # print_report(), write_markdown(), print_health(), print_landscape(), print_collision_report()
 ├── optimizer.py   # optimize_skill() — closed-loop optimizer with diagnostic context
+├── collider.py    # collide() — cross-skill collision testing
 └── __main__.py    # CLI entry point with argparse subcommands
 ```
 
@@ -523,6 +596,28 @@ print_report(skill, results, card)
 - `redundancy_score: float` — Jaccard similarity between description and when_to_use
 - `checks: list[HealthCheck]` — individual check results
 - `grade: str` (property) — "HEALTHY", "IMPROVABLE", or "BROKEN"
+
+**CollisionQuery** — a query for collision testing:
+- `query: str` — the user prompt to send
+- `intended_for: str` — which skill this query is meant for
+- `query_type: str` — "clear-a", "clear-b", or "boundary"
+
+**CollisionResult** — outcome of one collision query:
+- `query: CollisionQuery` — the original query
+- `skills_fired: list[str]` — all skill names that fired
+- `sole_winner: str | None` (property) — the skill name if exactly one fired
+- `stolen: bool` (property) — True if wrong skill fired on a clear query
+- `leaked: bool` (property) — True if no skill fired on a clear query
+- `duration_ms: int` — API response time
+- `cost_usd: float` — API cost
+- `error: str | None` — error message if errored
+
+**CollisionReport** — results for one skill pair:
+- `skill_a: SkillInfo`, `skill_b: SkillInfo` — the two skills
+- `results: list[CollisionResult]` — all query results
+- `theft_rate: float` (property) — fraction of clear queries stolen
+- `boundary_agreement: float` (property) — fraction of boundary queries where both fire
+- `verdict: str` (property) — "CLEAN", "LOW", "MODERATE", or "HIGH_COLLISION"
 
 ## Costs and Timing
 

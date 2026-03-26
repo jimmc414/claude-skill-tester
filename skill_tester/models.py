@@ -122,3 +122,69 @@ class OptimizationResult:
     rounds: list[OptimizationRound] = field(default_factory=list)
     converged: bool = False
     target_f1: float = 0.90
+
+
+@dataclass
+class CollisionQuery:
+    query: str
+    intended_for: str
+    query_type: str  # "clear-a", "clear-b", "boundary"
+
+
+@dataclass
+class CollisionResult:
+    query: CollisionQuery
+    skills_fired: list[str] = field(default_factory=list)
+    duration_ms: int = 0
+    cost_usd: float = 0.0
+    error: str | None = None
+
+    @property
+    def sole_winner(self) -> str | None:
+        return self.skills_fired[0] if len(self.skills_fired) == 1 else None
+
+    @property
+    def stolen(self) -> bool:
+        """Wrong skill fired on a clear query."""
+        if self.error or self.query.query_type == "boundary":
+            return False
+        return bool(self.skills_fired) and self.query.intended_for not in self.skills_fired
+
+    @property
+    def leaked(self) -> bool:
+        """No skill fired on a clear query."""
+        if self.error or self.query.query_type == "boundary":
+            return False
+        return len(self.skills_fired) == 0
+
+
+@dataclass
+class CollisionReport:
+    skill_a: SkillInfo
+    skill_b: SkillInfo
+    results: list[CollisionResult] = field(default_factory=list)
+
+    @property
+    def theft_rate(self) -> float:
+        clear = [r for r in self.results if r.query.query_type != "boundary" and not r.error]
+        if not clear:
+            return 0.0
+        return sum(1 for r in clear if r.stolen) / len(clear)
+
+    @property
+    def boundary_agreement(self) -> float:
+        boundary = [r for r in self.results if r.query.query_type == "boundary" and not r.error]
+        if not boundary:
+            return 0.0
+        return sum(1 for r in boundary if len(r.skills_fired) >= 2) / len(boundary)
+
+    @property
+    def verdict(self) -> str:
+        t = self.theft_rate
+        if t == 0:
+            return "CLEAN"
+        if t <= 0.15:
+            return "LOW"
+        if t <= 0.35:
+            return "MODERATE"
+        return "HIGH_COLLISION"

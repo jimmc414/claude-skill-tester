@@ -62,6 +62,7 @@ Requires Python 3.11+ and the `claude` CLI installed and authenticated.
 | `skill-test optimize <path>` | Closed-loop: test, diagnose failures, rewrite frontmatter, retest |
 | `skill-test discover` | List all installed Skill-tool skills with health grades |
 | `skill-test landscape` | Analyze skill ecosystem: budget consumption, health checks |
+| `skill-test collide <paths...>` | Test for trigger collisions between 2+ skills |
 
 All commands that call Claude accept `--backend auto|sdk|cli|api` (default: `auto`, which tries sdk -> cli -> api).
 
@@ -92,6 +93,31 @@ Round 2: F1 = 0.87 GOOD  [+0.20]
 Round 3: F1 = 0.93 OPTIMAL  [+0.06]
   Converged.
 ```
+
+## Collision Testing
+
+Skills are tested in isolation but compete in production. The optimizer can push Skill A to F1=0.95 and Skill B to F1=0.92, but when both are active, A may steal B's queries because their trigger surfaces overlap. `collide` detects this.
+
+```bash
+skill-test collide ~/.claude/skills/skill-a/ ~/.claude/skills/skill-b/ --clear 5 --boundary 5
+```
+
+For each pair, it generates clear queries (obviously for one skill) and boundary queries (ambiguous), then runs them and checks which skills fire.
+
+```
+Collision Test: skill-a vs skill-b
+==========================================
+
+    # |   Type    | Intended             | Fired                     | Result
+  ----+-----------+----------------------+---------------------------+--------
+    1 |  clear-a  | skill-a              | skill-a                   | CORRECT
+    2 |  clear-b  | skill-b              | skill-a                   | STOLEN
+    3 | boundary  | skill-a              | skill-a, skill-b          | SHARED
+
+  Theft rate: 10%  Boundary agreement: 50%  Verdict: LOW
+```
+
+Verdicts: CLEAN (0% theft), LOW (<=15%), MODERATE (<=35%), HIGH_COLLISION (>35%).
 
 ## Scoring
 
@@ -137,7 +163,7 @@ Checks include: missing `when_to_use`, hyphenated `when-to-use` (silently ignore
 
 ```
 skill_tester/
-  models.py      # SkillInfo, TestCase, TestResult, ScoreCard, HealthCheck, FrontmatterHealth
+  models.py      # SkillInfo, TestCase, TestResult, ScoreCard, HealthCheck, FrontmatterHealth, Collision*
   parser.py      # SKILL.md parsing, frontmatter rewriting, skill discovery
   generator.py   # test query generation via CLI or Agent SDK
   runner.py      # query execution + Skill tool_use detection + rival capture
@@ -146,6 +172,7 @@ skill_tester/
   diagnose.py    # failure diagnostics (rival identification, semantic gap analysis)
   reporter.py    # terminal and markdown reporting
   optimizer.py   # closed-loop frontmatter optimizer with body-grounded rewrites and diagnostic context
+  collider.py    # cross-skill collision testing
   __main__.py    # CLI entry point
 ```
 

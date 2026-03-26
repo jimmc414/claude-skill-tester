@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from .models import FrontmatterHealth, OptimizationResult, ScoreCard, SkillInfo, TestResult
+from .models import CollisionReport, FrontmatterHealth, OptimizationResult, ScoreCard, SkillInfo, TestResult
 
 
 def print_report(
@@ -198,6 +198,75 @@ def print_landscape(
     improvable = sum(1 for h in healths if h.grade == "IMPROVABLE")
     healthy = sum(1 for h in healths if h.grade == "HEALTHY")
     w(f"  Grades: {healthy} healthy, {improvable} improvable, {broken} broken\n\n")
+
+
+def print_collision_report(
+    reports: list[CollisionReport],
+    file=sys.stdout,
+) -> None:
+    w = file.write
+
+    for report in reports:
+        w(f"\nCollision Test: {report.skill_a.name} vs {report.skill_b.name}\n")
+        w("=" * (20 + len(report.skill_a.name) + len(report.skill_b.name)) + "\n\n")
+
+        # Results table
+        w(f"  {'#':>3} | {'Type':^9} | {'Intended':<20} | {'Fired':<25} | Result\n")
+        w(f"  {'---':>3}-+-{'-' * 9}-+-{'-' * 20}-+-{'-' * 25}-+--------\n")
+
+        for i, r in enumerate(report.results, 1):
+            fired = ", ".join(r.skills_fired) if r.skills_fired else "(none)"
+            fired = _truncate(fired, 25)
+            intended = _truncate(r.query.intended_for, 20)
+
+            if r.error:
+                label = "ERR"
+            elif r.query.query_type == "boundary":
+                if len(r.skills_fired) >= 2:
+                    label = "SHARED"
+                elif len(r.skills_fired) == 1:
+                    winner = r.skills_fired[0]
+                    label = "A-WINS" if winner == report.skill_a.name else "B-WINS"
+                else:
+                    label = "NEITHER"
+            elif r.stolen:
+                label = "STOLEN"
+            elif r.leaked:
+                label = "LEAKED"
+            else:
+                label = "CORRECT"
+
+            w(f"  {i:>3} | {r.query.query_type:^9} | {intended:<20} | {fired:<25} | {label}\n")
+
+        w("\n")
+
+        # Summary metrics
+        w(f"  Theft rate: {report.theft_rate:.0%}")
+        w(f"  Boundary agreement: {report.boundary_agreement:.0%}")
+        w(f"  Verdict: {report.verdict}\n")
+
+        # Stolen queries detail
+        stolen = [r for r in report.results if r.stolen]
+        if stolen:
+            w("\n  Stolen queries:\n")
+            for r in stolen:
+                fired = ", ".join(r.skills_fired)
+                w(f"    \"{_truncate(r.query.query, 60)}\" intended={r.query.intended_for} fired={fired}\n")
+
+        # Cost summary
+        total_cost = sum(r.cost_usd for r in report.results)
+        total_time = sum(r.duration_ms for r in report.results)
+        errors = sum(1 for r in report.results if r.error)
+        w(f"\n  Cost: ${total_cost:.4f}  Time: {total_time / 1000:.1f}s  Errors: {errors}\n\n")
+
+    # Multi-pair summary
+    if len(reports) > 1:
+        w("Summary\n")
+        w("=" * 50 + "\n")
+        for report in reports:
+            w(f"  {report.skill_a.name} vs {report.skill_b.name}: "
+              f"{report.verdict} (theft={report.theft_rate:.0%})\n")
+        w("\n")
 
 
 def _truncate(s: str, maxlen: int) -> str:
