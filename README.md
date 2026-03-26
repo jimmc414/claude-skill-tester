@@ -30,7 +30,7 @@ Override with `--backend sdk|cli|api` to force a specific one.
 
 All three backends are used for test query generation and optimization rewrites. Trigger detection (the actual "did the skill fire?" check) requires the Claude Code runtime, so `run` and the test phase of `quick`/`optimize` always use `sdk` or `cli` -- even when `api` is selected for inference.
 
-The optimizer treats `description` + `when_to_use` as a prompt to be optimized against a test suite with regression protection. When failures occur, it captures which rival skill intercepted the query and runs diagnostic queries to explain the semantic gap — transforming optimization from blind hill climbing to informed correction.
+The optimizer treats `description` + `when_to_use` as a prompt to be optimized against a test suite with regression protection. It reads the skill body (up to 2000 chars) so rewrites stay grounded in what the skill actually does. When failures occur, it captures which rival skill intercepted the query and runs diagnostic queries to explain the semantic gap — transforming optimization from blind hill climbing to informed correction.
 
 ## Quick start
 
@@ -75,7 +75,7 @@ Each round:
 1. Generates fresh test queries from the current description
 2. Merges in regression cases from prior round failures
 3. Runs the suite, scores F1
-4. If below target: analyzes false negatives/positives, calls Claude to rewrite `description` + `when_to_use`, writes to SKILL.md, loops
+4. If below target: analyzes false negatives/positives, reads the skill body for grounding, calls Claude to rewrite `description` + `when_to_use`, writes to SKILL.md, loops
 
 Failed queries carry forward as mandatory regression tests. The optimizer can't narrow the description to dodge old failures -- it must generalize.
 
@@ -145,7 +145,7 @@ skill_tester/
   health.py      # static frontmatter analysis (budget, redundancy, field checks)
   diagnose.py    # failure diagnostics (rival identification, semantic gap analysis)
   reporter.py    # terminal and markdown reporting
-  optimizer.py   # closed-loop frontmatter optimizer with diagnostic context
+  optimizer.py   # closed-loop frontmatter optimizer with body-grounded rewrites and diagnostic context
   __main__.py    # CLI entry point
 ```
 

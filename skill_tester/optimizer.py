@@ -31,6 +31,7 @@ Current frontmatter:
   description: "{description}"
   when_to_use: "{when_to_use}"
 
+{body_section}
 Test results (F1: {f1:.2f}, Precision: {precision:.2f}, Recall: {recall:.2f}):
 
 FALSE NEGATIVES — these queries SHOULD have triggered the skill but DIDN'T:
@@ -52,6 +53,7 @@ Write improved frontmatter that:
 5. when_to_use: Detailed trigger conditions with specific user phrases and exclusions. Be thorough.
 6. No XML angle brackets (< >) in either field
 7. If the name is hurting trigger accuracy (e.g. misleading or too vague), suggest a better name
+8. Ground the description in what the skill body actually does — don't promise capabilities the skill doesn't have
 
 Return ONLY valid JSON:
 {{"description": "...", "when_to_use": "...", "name_suggestion": null}}
@@ -218,6 +220,11 @@ def _propose_improvements(
 
     diagnostics_section = _format_diagnostics(fn_results or [], fp_results or [])
 
+    body_section = ""
+    if skill.body:
+        truncated = skill.body[:2000]
+        body_section = f"Skill body (what the skill actually instructs Claude to do):\n{truncated}\n"
+
     prompt = _OPTIMIZATION_PROMPT.format(
         name=skill.name,
         description=skill.description,
@@ -229,6 +236,7 @@ def _propose_improvements(
         fp_list=fp_list,
         tp_list=tp_list,
         diagnostics_section=diagnostics_section,
+        body_section=body_section,
     )
 
     text = call_claude(prompt, backend)
