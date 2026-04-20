@@ -4,6 +4,12 @@ Automated trigger testing and closed-loop optimization for Claude Code skills. U
 
 Point it at any SKILL.md. It generates test queries, runs them through Claude, measures whether the skill actually fires, and reports precision/recall/F1. If the score is low, the optimizer rewrites the frontmatter and retests until it converges.
 
+## The mental model
+
+**This is a unit test framework for the fuzzy prompt layer between a user's words and Claude's decision to invoke a skill — with a built-in optimizer that rewrites that prompt until the tests pass.**
+
+Claude picks a skill by semantically matching a user's query against a short paragraph of text (the skill's `description` and `when_to_use` fields). That paragraph is the only lever you have. This tool treats it like code: generate tests, run them, score the results, and if the score is low, rewrite the paragraph and try again.
+
 ## The problem
 
 Claude Code skills have a cold start problem. You write a SKILL.md with a description, deploy it, and then hope Claude invokes it at the right time. There's no feedback loop. You discover undertriggering when users complain, and overtriggering when the skill hijacks unrelated conversations. Both are invisible until they happen in production.
@@ -64,7 +70,18 @@ Requires Python 3.11+ and the `claude` CLI installed and authenticated.
 | `skill-test landscape` | Analyze skill ecosystem: budget consumption, health checks |
 | `skill-test collide <paths...>` | Test for trigger collisions between 2+ skills |
 
+### Which command to reach for
+
+- **Just want a score?** → `quick`
+- **Want to edit tests before running?** → `generate`, then `run`
+- **Score is low and you want it fixed automatically?** → `optimize`
+- **Something feels off with the frontmatter and you want a sanity check?** → `parse`
+- **Want to see all your skills at a glance?** → `discover` (list) or `landscape` (list + budget + health)
+- **Two skills you suspect are stealing each other's queries?** → `collide`
+
 All commands that call Claude accept `--backend auto|sdk|cli|api` (default: `auto`, which tries sdk -> cli -> api).
+
+> **Heads up on `--backend api`:** Detecting "did the skill fire?" requires the Claude Code runtime. The `api` backend can generate queries and propose rewrites, but test runs silently fall back to `cli` for the actual trigger detection step. If you want to run fully headless from an API key alone, you can't — you need either the CLI or the SDK available for the detection step.
 
 ## Optimizer
 
@@ -78,7 +95,10 @@ Each round:
 3. Runs the suite, scores F1
 4. If below target: analyzes false negatives/positives, reads the skill body for grounding, calls Claude to rewrite `description` + `when_to_use`, writes to SKILL.md, loops
 
-Failed queries carry forward as mandatory regression tests. The optimizer can't narrow the description to dodge old failures -- it must generalize.
+Two anti-cheating tricks make this loop honest rather than just a hill climb:
+
+- **Failed queries carry forward as mandatory regression tests.** The optimizer can't narrow the description to dodge old failures — it must *generalize* to handle them alongside new ones. Without this, the easiest way to pass a test is to redefine the skill to match it; with this, every past failure stays in the suite permanently.
+- **Rewrites are grounded in the skill body.** The optimizer reads up to 2000 chars of what the skill actually does before rewriting, so it can't promise capabilities the skill doesn't have. You don't get a polished description for a skill that can't back it up.
 
 Backup is created on first round (`SKILL.md.bak`). Use `--dry-run` to preview changes without writing.
 
@@ -96,7 +116,9 @@ Round 3: F1 = 0.93 OPTIMAL  [+0.06]
 
 ## Collision Testing
 
-Skills are tested in isolation but compete in production. The optimizer can push Skill A to F1=0.95 and Skill B to F1=0.92, but when both are active, A may steal B's queries because their trigger surfaces overlap. `collide` detects this.
+F1 measures a skill in isolation. But in production, skills aren't alone — they compete for every query. A skill can score OPTIMAL on its own and still lose 40% of its queries to a neighboring skill whose trigger surface overlaps.
+
+That's the gap `collide` fills. Use F1 first to get each skill working individually, then use `collide` to check whether they still behave when deployed together.
 
 ```bash
 skill-test collide ~/.claude/skills/skill-a/ ~/.claude/skills/skill-b/ --clear 5 --boundary 5
@@ -128,6 +150,8 @@ Standard confusion matrix. Verdicts:
 | OPTIMAL | >= 0.90 |
 | GOOD | >= 0.75 |
 | NEEDS_WORK | < 0.75 |
+
+See [F1_SCORING.md](F1_SCORING.md) for a full walkthrough: the formulas, a worked example, why F1 is preferred over accuracy for this problem, and how it differs from collision testing.
 
 ## Test suite format
 
