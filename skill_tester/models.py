@@ -43,6 +43,7 @@ class ScoreCard:
     fp: int = 0
     tn: int = 0
     fn: int = 0
+    err: int = 0
 
     @property
     def precision(self) -> float:
@@ -64,7 +65,14 @@ class ScoreCard:
         return self.tp + self.fp + self.tn + self.fn
 
     @property
+    def error_rate(self) -> float:
+        denom = self.total + self.err
+        return self.err / denom if denom > 0 else 0.0
+
+    @property
     def verdict(self) -> str:
+        if self.error_rate > 0.20:
+            return "UNRELIABLE"
         if self.f1 >= 0.90:
             return "OPTIMAL"
         if self.f1 >= 0.75:

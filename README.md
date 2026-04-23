@@ -114,6 +114,8 @@ Round 3: F1 = 0.93 OPTIMAL  [+0.06]
   Converged.
 ```
 
+(illustrative — real runs may also show UNRELIABLE when the ERR rate exceeds 20%)
+
 ## Collision Testing
 
 F1 measures a skill in isolation. But in production, skills aren't alone — they compete for every query. A skill can score OPTIMAL on its own and still lose 40% of its queries to a neighboring skill whose trigger surface overlaps.
@@ -147,6 +149,7 @@ Standard confusion matrix. Verdicts:
 
 | Verdict | F1 |
 |---------|----|
+| UNRELIABLE | any (ERR rate > 20% overrides F1 score) |
 | OPTIMAL | >= 0.90 |
 | GOOD | >= 0.75 |
 | NEEDS_WORK | < 0.75 |

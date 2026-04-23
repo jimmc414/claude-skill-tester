@@ -37,17 +37,18 @@ def print_report(
 
     # Scores
     w(f"  Precision: {card.precision:.2f}  Recall: {card.recall:.2f}  F1: {card.f1:.2f}\n")
-    w(f"  TP: {card.tp}  FP: {card.fp}  TN: {card.tn}  FN: {card.fn}\n")
+    w(f"  TP: {card.tp}  FP: {card.fp}  TN: {card.tn}  FN: {card.fn}  ERR: {card.err}\n")
     w(f"  Verdict: {card.verdict}")
-    if card.verdict != "OPTIMAL":
+    if card.verdict == "UNRELIABLE":
+        w(f" (ERR rate {card.error_rate:.0%} > 20%; F1 score below is unreliable)")
+    elif card.verdict != "OPTIMAL":
         w(" (target F1 >= 0.90 for OPTIMAL)")
     w("\n")
 
     # Cost summary
     total_cost = sum(r.cost_usd for r in results)
     total_time = sum(r.duration_ms for r in results)
-    errors = sum(1 for r in results if r.error)
-    w(f"\n  Cost: ${total_cost:.4f}  Time: {total_time / 1000:.1f}s  Errors: {errors}\n")
+    w(f"\n  Cost: ${total_cost:.4f}  Time: {total_time / 1000:.1f}s  Errors: {card.err}\n")
 
     # Failures
     failures = [r for r in results if not r.passed and not r.error]
@@ -77,6 +78,8 @@ def write_markdown(
     a(f"# Skill Trigger Test: {skill.name}\n")
     a(f"**Description:** {skill.description}\n")
     a(f"**Verdict:** {card.verdict} (F1: {card.f1:.2f})\n")
+    if card.verdict == "UNRELIABLE":
+        a(f"> (ERR rate {card.error_rate:.0%} > 20%; F1 score below is unreliable)\n")
 
     a("| # | Expect | Actual | Result | Query |")
     a("|---|--------|--------|--------|-------|")
@@ -87,7 +90,7 @@ def write_markdown(
         a(f"| {i} | {expect} | {actual} | {status} | {r.case.query} |")
 
     a(f"\n**Precision:** {card.precision:.2f} | **Recall:** {card.recall:.2f} | **F1:** {card.f1:.2f}")
-    a(f"\nTP: {card.tp} | FP: {card.fp} | TN: {card.tn} | FN: {card.fn}")
+    a(f"\nTP: {card.tp} | FP: {card.fp} | TN: {card.tn} | FN: {card.fn} | ERR: {card.err}")
 
     total_cost = sum(r.cost_usd for r in results)
     a(f"\n**Total cost:** ${total_cost:.4f}")
@@ -107,6 +110,8 @@ def print_optimization_report(result: OptimizationResult, file=sys.stdout) -> No
     for rd in result.rounds:
         delta = f"  [+{rd.score.f1 - prev_f1:.2f}]" if prev_f1 > 0 else ""
         w(f"Round {rd.round_num}: F1 = {rd.score.f1:.2f} {rd.score.verdict}{delta}\n")
+        if rd.score.verdict == "UNRELIABLE":
+            w(f"  (ERR rate {rd.score.error_rate:.0%} > 20%; F1 score is unreliable)\n")
         if rd.false_negatives:
             fn_str = ", ".join(f'"{_truncate(q, 50)}"' for q in rd.false_negatives[:3])
             more = f" (+{len(rd.false_negatives) - 3} more)" if len(rd.false_negatives) > 3 else ""
@@ -257,7 +262,7 @@ def print_collision_report(
         total_cost = sum(r.cost_usd for r in report.results)
         total_time = sum(r.duration_ms for r in report.results)
         errors = sum(1 for r in report.results if r.error)
-        w(f"\n  Cost: ${total_cost:.4f}  Time: {total_time / 1000:.1f}s  Errors: {errors}\n\n")
+        w(f"\n  Cost: ${total_cost:.4f}  Time: {total_time / 1000:.1f}s  ERR: {errors}\n\n")
 
     # Multi-pair summary
     if len(reports) > 1:

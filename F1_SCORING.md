@@ -86,6 +86,7 @@ The tool maps F1 onto three human-readable verdicts:
 
 | Verdict | F1 Score | What it means |
 |---------|----------|---------------|
+| UNRELIABLE | any | >20% of queries timed out; the F1 number below is not trustworthy |
 | OPTIMAL | >= 0.90 | Skill triggers reliably and cleanly |
 | GOOD | >= 0.75 | Usable, but has some misses or spurious fires |
 | NEEDS_WORK | < 0.75 | Trigger behavior is unreliable |

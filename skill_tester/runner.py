@@ -12,7 +12,7 @@ from .models import SkillInfo, TestCase, TestResult
 def run_test(
     case: TestCase,
     target_skill: str,
-    timeout: int = 120,
+    timeout: int = 240,
     backend: str = "cli",
 ) -> TestResult:
     if backend == "sdk":
@@ -24,7 +24,7 @@ def run_test(
 def run_suite(
     cases: list[TestCase],
     target_skill: str,
-    timeout: int = 120,
+    timeout: int = 240,
     backend: str = "cli",
     diagnose: bool = False,
     skill_info: SkillInfo | None = None,

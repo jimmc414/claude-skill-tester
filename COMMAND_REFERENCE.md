@@ -122,7 +122,7 @@ Execute a saved test suite. Each query is sent to Claude and the output is inspe
 **Options:**
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--timeout` | `120` | Timeout per query in seconds |
+| `--timeout` | `240` | Timeout per query in seconds |
 | `--output` | (none) | Write a markdown report to this file path |
 | `--backend` | `auto` | `auto`, `sdk`, `cli`, or `api` |
 | `--diagnose` | off | Diagnose failures: identify rival skills and explain semantic gaps |
@@ -171,7 +171,7 @@ Generate test queries and run them in one step. No intermediate YAML file. Use t
 |------|---------|-------------|
 | `--positive` | `10` | Number of positive queries |
 | `--negative` | `5` | Number of negative queries |
-| `--timeout` | `120` | Timeout per query in seconds |
+| `--timeout` | `240` | Timeout per query in seconds |
 | `--output` | (none) | Write markdown report to file |
 | `--backend` | `auto` | `auto`, `sdk`, `cli`, or `api` |
 | `--diagnose` | off | Diagnose failures: identify rival skills and explain semantic gaps |
@@ -203,7 +203,7 @@ The optimizer rewrites `description` and `when_to_use` each round. It analyzes t
 | `--max-rounds` | `5` | Maximum optimization rounds |
 | `--positive` | `10` | Positive queries generated per round |
 | `--negative` | `5` | Negative queries generated per round |
-| `--timeout` | `120` | Timeout per query in seconds |
+| `--timeout` | `240` | Timeout per query in seconds |
 | `--backend` | `auto` | `auto`, `sdk`, `cli`, or `api` |
 | `--dry-run` | off | Show proposed changes without writing to SKILL.md |
 | `--output` | (none) | Write optimization report to file |
@@ -252,7 +252,7 @@ Frontmatter changes:
   name: my-skill
   description:
     BEFORE: "Original description text..."
-    AFTER:  "Improved description with trigger phrases..."
+    AFTER:  "My-skill expert. ALWAYS invoke this skill when the user asks about reviewing docs, auditing files, or checking onboarding accuracy. Do not attempt directly, use this skill first."
   when_to_use:
     BEFORE: (not set)
     AFTER:  "Triggers: 'review docs', 'audit files'. Do NOT use for: ..."
@@ -332,7 +332,7 @@ Test for trigger collisions between two or more skills. For each pair, generates
 |------|---------|-------------|
 | `--clear` | `5` | Clear queries per skill per pair |
 | `--boundary` | `5` | Boundary queries per pair |
-| `--timeout` | `120` | Timeout per query in seconds |
+| `--timeout` | `240` | Timeout per query in seconds |
 | `--backend` | `auto` | `auto`, `sdk`, `cli`, or `api` |
 | `--output` | (none) | Write collision report to file |
 
@@ -470,11 +470,12 @@ Metrics computed:
 Verdict thresholds:
 | Verdict | F1 Score |
 |---------|----------|
+| UNRELIABLE | any (ERR rate > 20% overrides F1 score) |
 | OPTIMAL | >= 0.90 |
 | GOOD | >= 0.75 |
 | NEEDS_WORK | < 0.75 |
 
-Errored test cases (timeouts, CLI failures) are excluded from scoring.
+Errored test cases (timeouts, CLI failures) are excluded from F1 scoring but counted toward the UNRELIABLE verdict threshold.
 
 ## Test Suite YAML Format
 
@@ -630,7 +631,7 @@ The `generate` step makes one additional Claude call to produce the test queries
 
 ## Error Handling
 
-- **Timeout**: If a query exceeds `--timeout` seconds, it is recorded as an error and excluded from scoring
+- **Timeout**: If a query exceeds `--timeout` seconds (default 240), it is recorded as an error and counted toward the UNRELIABLE verdict threshold (>20% ERR rate)
 - **CLI not found**: If `claude` is not on PATH, the error is recorded per-test
 - **JSON parse failure**: If CLI output isn't valid JSON, the error is recorded
 - **SDK exceptions**: Any exception during SDK `query()` is caught and recorded

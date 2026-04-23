@@ -7,6 +7,7 @@ def score(results: list[TestResult]) -> ScoreCard:
     card = ScoreCard()
     for r in results:
         if r.error:
+            card.err += 1
             continue
         if r.case.expect_trigger and r.triggered:
             card.tp += 1

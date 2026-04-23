@@ -46,10 +46,10 @@ TRUE POSITIVES — these queries correctly triggered (preserve these):
 {tp_list}
 
 Write improved frontmatter that:
-1. Fixes false negatives by adding trigger phrases that match those queries
-2. Fixes false positives by adding "Do NOT use for..." exclusions
+1. Fixes false negatives by extending the "ALWAYS invoke when the user asks about <...>" clause with specific topics drawn from the FN queries.
+2. Fixes false positives by appending a dedicated "Do NOT invoke for <exclusions>." sentence — include this sentence ONLY when FPs exist; otherwise omit it entirely.
 3. Preserves whatever currently matches the true positives
-4. description: [What it does]. [Core trigger phrases]. [Key exclusions]. MUST be under 1024 characters.
+4. description: Use the directive template: "<Domain> expert. ALWAYS invoke this skill when the user asks about <X, Y, Z>. Do not attempt directly, use this skill first." Append "Do NOT invoke for <A, B>." only if FPs exist. MUST be under 1024 characters.
 5. when_to_use: Detailed trigger conditions with specific user phrases and exclusions. Be thorough.
 6. No XML angle brackets (< >) in either field
 7. If the name is hurting trigger accuracy (e.g. misleading or too vague), suggest a better name
