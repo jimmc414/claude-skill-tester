@@ -1,0 +1,245 @@
+Frontmatter health: IMPROVABLE  (256 chars, 1.6% of budget)
+  WARN: [W1] No when_to_use field. Adding trigger phrases and exclusions in when_to_use provides a second independent trigger surface.
+Optimizing skill (DRY RUN, target F1 >= 0.9, max 3 rounds)
+
+==================================================
+Round 1/3
+==================================================
+  Generating test queries...
+  Running 15 tests (0 regression)...
+  [1/15] should trigger: Build my Xcode project and run the UI tests, then show me which ones f
+           -> FAIL
+  [2/15] should trigger: Launch my app in the simulator and tap the Sign In button
+           -> FAIL
+  [3/15] should trigger: I need to automate a login flow on iPhone - enter email, password, the
+           -> FAIL
+  [4/15] should trigger: Stream the console logs from my running iOS app and filter errors only
+           -> FAIL
+  [5/15] should trigger: Check the accessibility labels on all the buttons in my checkout scree
+           -> FAIL
+  [6/15] should trigger: What elements are on the current screen of the simulator right now?
+           -> FAIL
+  [7/15] should trigger: Grab a screenshot of my app and save it so I can attach it to a bug re
+           -> FAIL
+  [8/15] should trigger: Boot a fresh iPhone 15 simulator, install the build, and launch it
+           -> FAIL
+  [9/15] should trigger: Can you write a script that walks through my onboarding flow and verif
+           -> FAIL
+  [10/15] should trigger: Parse the xcresult bundle from my last build and tell me what errors s
+           -> FAIL
+  [11/15] should NOT trigger: Build and test my Android app on an emulator using gradle
+           -> PASS
+  [12/15] should NOT trigger: Automate browser testing for my React web app using Playwright
+           -> PASS
+  [13/15] should NOT trigger: Deploy my iOS app to TestFlight for beta testers
+           -> PASS
+  [14/15] should NOT trigger: Write unit tests for my Swift package's networking layer
+           -> PASS
+  [15/15] should NOT trigger: Set up a CI pipeline in GitHub Actions for my macOS command line tool
+           -> PASS
+
+  Diagnosing 10 failure(s)...
+    [1/10] diagnosing: Build my Xcode project and run the UI tests, then show me wh
+    [2/10] diagnosing: Launch my app in the simulator and tap the Sign In button
+    [3/10] diagnosing: I need to automate a login flow on iPhone - enter email, pas
+    [4/10] diagnosing: Stream the console logs from my running iOS app and filter e
+    [5/10] diagnosing: Check the accessibility labels on all the buttons in my chec
+    [6/10] diagnosing: What elements are on the current screen of the simulator rig
+    [7/10] diagnosing: Grab a screenshot of my app and save it so I can attach it t
+    [8/10] diagnosing: Boot a fresh iPhone 15 simulator, install the build, and lau
+    [9/10] diagnosing: Can you write a script that walks through my onboarding flow
+    [10/10] diagnosing: Parse the xcresult bundle from my last build and tell me wha
+
+  F1: 0.00 (NEEDS_WORK)  TP:0 FP:0 TN:5 FN:10
+  Proposing improved frontmatter...
+  [dry-run] Would update SKILL.md.
+
+==================================================
+Round 2/3
+==================================================
+  Generating test queries...
+  Running 25 tests (10 regression)...
+  [1/25] should trigger: Can you build my Xcode project and run the XCUITest suite for the Logi
+           -> FAIL
+  [2/25] should trigger: I need to automate tapping the 'Sign In' button and typing credentials
+           -> FAIL
+  [3/25] should trigger: Grab a screenshot of the checkout screen on the iOS simulator so I can
+           -> FAIL
+  [4/25] should trigger: Parse the xcresult bundle from my last test run and tell me which asse
+           -> FAIL
+  [5/25] should trigger: Stream the console logs from my app running in the simulator and filte
+           -> FAIL
+  [6/25] should trigger: Walk through the onboarding flow on the simulator - fill in the email 
+           -> FAIL
+  [7/25] should trigger: List every interactable element currently visible on screen in the iPh
+           -> FAIL
+  [8/25] should trigger: Boot the iPad Pro simulator, install the .app bundle I built, and laun
+           -> FAIL
+  [9/25] should trigger: Read the full view hierarchy for the current screen so I can figure ou
+           -> FAIL
+  [10/25] should trigger: Write an automation that signs into the app, navigates to settings, to
+           -> FAIL
+  [11/25] should NOT trigger: Help me set up an Android emulator with Espresso to run UI tests on my
+           -> PASS
+  [12/25] should NOT trigger: I need to take a screenshot of my macOS menu bar app using AppleScript
+           -> PASS
+  [13/25] should NOT trigger: Can you automate a login flow on my web app using Playwright in Chromi
+           -> PASS
+  [14/25] should NOT trigger: Review my Swift Package Manager Package.swift file and suggest how to 
+           -> PASS
+  [15/25] should NOT trigger: Parse this JUnit XML report from our Jenkins pipeline and summarize wh
+           -> PASS
+  [16/25] should trigger: Build my Xcode project and run the UI tests, then show me which ones f
+           -> FAIL
+  [17/25] should trigger: Launch my app in the simulator and tap the Sign In button
+           -> FAIL
+  [18/25] should trigger: I need to automate a login flow on iPhone - enter email, password, the
+           -> FAIL
+  [19/25] should trigger: Stream the console logs from my running iOS app and filter errors only
+           -> FAIL
+  [20/25] should trigger: Check the accessibility labels on all the buttons in my checkout scree
+           -> FAIL
+  [21/25] should trigger: What elements are on the current screen of the simulator right now?
+           -> FAIL
+  [22/25] should trigger: Grab a screenshot of my app and save it so I can attach it to a bug re
+           -> FAIL
+  [23/25] should trigger: Boot a fresh iPhone 15 simulator, install the build, and launch it
+           -> FAIL
+  [24/25] should trigger: Can you write a script that walks through my onboarding flow and verif
+           -> FAIL
+  [25/25] should trigger: Parse the xcresult bundle from my last build and tell me what errors s
+           -> FAIL
+
+  Diagnosing 20 failure(s)...
+    [1/20] diagnosing: Can you build my Xcode project and run the XCUITest suite fo
+    [2/20] diagnosing: I need to automate tapping the 'Sign In' button and typing c
+    [3/20] diagnosing: Grab a screenshot of the checkout screen on the iOS simulato
+    [4/20] diagnosing: Parse the xcresult bundle from my last test run and tell me 
+    [5/20] diagnosing: Stream the console logs from my app running in the simulator
+    [6/20] diagnosing: Walk through the onboarding flow on the simulator - fill in 
+    [7/20] diagnosing: List every interactable element currently visible on screen 
+    [8/20] diagnosing: Boot the iPad Pro simulator, install the .app bundle I built
+    [9/20] diagnosing: Read the full view hierarchy for the current screen so I can
+    [10/20] diagnosing: Write an automation that signs into the app, navigates to se
+    [11/20] diagnosing: Build my Xcode project and run the UI tests, then show me wh
+    [12/20] diagnosing: Launch my app in the simulator and tap the Sign In button
+    [13/20] diagnosing: I need to automate a login flow on iPhone - enter email, pas
+    [14/20] diagnosing: Stream the console logs from my running iOS app and filter e
+    [15/20] diagnosing: Check the accessibility labels on all the buttons in my chec
+    [16/20] diagnosing: What elements are on the current screen of the simulator rig
+    [17/20] diagnosing: Grab a screenshot of my app and save it so I can attach it t
+    [18/20] diagnosing: Boot a fresh iPhone 15 simulator, install the build, and lau
+    [19/20] diagnosing: Can you write a script that walks through my onboarding flow
+    [20/20] diagnosing: Parse the xcresult bundle from my last build and tell me wha
+
+  F1: 0.00 (NEEDS_WORK)  TP:0 FP:0 TN:5 FN:20
+  Proposing improved frontmatter...
+  [dry-run] Would update SKILL.md.
+
+==================================================
+Round 3/3
+==================================================
+  Generating test queries...
+  Running 35 tests (20 regression)...
+  [1/35] should trigger: Can you build my Xcode project and tell me what errors come back?
+           -> FAIL
+  [2/35] should trigger: Run the UI test suite on the iPhone 15 simulator and show me which ass
+           -> FAIL
+  [3/35] should trigger: I need to fill out the signup form in my app running on the simulator 
+           -> FAIL
+  [4/35] should trigger: Parse the xcresult bundle from my last test run and extract the warnin
+           -> FAIL
+  [5/35] should trigger: Grab a screenshot of the checkout screen for a bug report
+           -> FAIL
+  [6/35] should trigger: Show me all the tappable buttons on the current screen of the booted s
+           -> FAIL
+  [7/35] should trigger: Stream the console logs from my app and filter to only errors
+           -> FAIL
+  [8/35] should trigger: Launch com.mycompany.myapp on the iPad simulator, then toggle dark mod
+           -> FAIL
+  [9/35] should trigger: Write me a script that logs in, navigates to the profile tab, and veri
+           -> FAIL
+  [10/35] should trigger: What are the accessibility identifiers on this login view?
+           -> FAIL
+  [11/35] should NOT trigger: Set up an Android emulator and run my Espresso tests
+           -> PASS
+  [12/35] should NOT trigger: Help me refactor this SwiftUI view — the body is getting too long
+           -> PASS
+  [13/35] should NOT trigger: Automate filling out this login form on the company website using Play
+           -> PASS
+  [14/35] should NOT trigger: My iPhone isn't receiving push notifications from TestFlight builds — 
+           -> PASS
+  [15/35] should NOT trigger: Write a macOS menu bar app that captures screenshots on a hotkey
+           -> PASS
+  [16/35] should trigger: Build my Xcode project and run the UI tests, then show me which ones f
+           -> FAIL
+  [17/35] should trigger: Launch my app in the simulator and tap the Sign In button
+           -> FAIL
+  [18/35] should trigger: I need to automate a login flow on iPhone - enter email, password, the
+           -> FAIL
+  [19/35] should trigger: Stream the console logs from my running iOS app and filter errors only
+           -> FAIL
+  [20/35] should trigger: Check the accessibility labels on all the buttons in my checkout scree
+           -> FAIL
+  [21/35] should trigger: What elements are on the current screen of the simulator right now?
+           -> FAIL
+  [22/35] should trigger: Grab a screenshot of my app and save it so I can attach it to a bug re
+           -> FAIL
+  [23/35] should trigger: Boot a fresh iPhone 15 simulator, install the build, and launch it
+           -> FAIL
+  [24/35] should trigger: Can you write a script that walks through my onboarding flow and verif
+           -> FAIL
+  [25/35] should trigger: Parse the xcresult bundle from my last build and tell me what errors s
+           -> FAIL
+  [26/35] should trigger: Can you build my Xcode project and run the XCUITest suite for the Logi
+           -> FAIL
+  [27/35] should trigger: I need to automate tapping the 'Sign In' button and typing credentials
+           -> FAIL
+  [28/35] should trigger: Grab a screenshot of the checkout screen on the iOS simulator so I can
+           -> FAIL
+  [29/35] should trigger: Parse the xcresult bundle from my last test run and tell me which asse
+           -> FAIL
+  [30/35] should trigger: Stream the console logs from my app running in the simulator and filte
+           -> FAIL
+  [31/35] should trigger: Walk through the onboarding flow on the simulator - fill in the email 
+           -> FAIL
+  [32/35] should trigger: List every interactable element currently visible on screen in the iPh
+           -> FAIL
+  [33/35] should trigger: Boot the iPad Pro simulator, install the .app bundle I built, and laun
+           -> FAIL
+  [34/35] should trigger: Read the full view hierarchy for the current screen so I can figure ou
+           -> FAIL
+  [35/35] should trigger: Write an automation that signs into the app, navigates to settings, to
+           -> FAIL
+
+  Diagnosing 30 failure(s)...
+    [1/30] diagnosing: Can you build my Xcode project and tell me what errors come 
+    [2/30] diagnosing: Run the UI test suite on the iPhone 15 simulator and show me
+    [3/30] diagnosing: I need to fill out the signup form in my app running on the 
+    [4/30] diagnosing: Parse the xcresult bundle from my last test run and extract 
+    [5/30] diagnosing: Grab a screenshot of the checkout screen for a bug report
+    [6/30] diagnosing: Show me all the tappable buttons on the current screen of th
+    [7/30] diagnosing: Stream the console logs from my app and filter to only error
+    [8/30] diagnosing: Launch com.mycompany.myapp on the iPad simulator, then toggl
+    [9/30] diagnosing: Write me a script that logs in, navigates to the profile tab
+    [10/30] diagnosing: What are the accessibility identifiers on this login view?
+    [11/30] diagnosing: Build my Xcode project and run the UI tests, then show me wh
+    [12/30] diagnosing: Launch my app in the simulator and tap the Sign In button
+    [13/30] diagnosing: I need to automate a login flow on iPhone - enter email, pas
+    [14/30] diagnosing: Stream the console logs from my running iOS app and filter e
+    [15/30] diagnosing: Check the accessibility labels on all the buttons in my chec
+    [16/30] diagnosing: What elements are on the current screen of the simulator rig
+    [17/30] diagnosing: Grab a screenshot of my app and save it so I can attach it t
+    [18/30] diagnosing: Boot a fresh iPhone 15 simulator, install the build, and lau
+    [19/30] diagnosing: Can you write a script that walks through my onboarding flow
+    [20/30] diagnosing: Parse the xcresult bundle from my last build and tell me wha
+    [21/30] diagnosing: Can you build my Xcode project and run the XCUITest suite fo
+    [22/30] diagnosing: I need to automate tapping the 'Sign In' button and typing c
+    [23/30] diagnosing: Grab a screenshot of the checkout screen on the iOS simulato
+    [24/30] diagnosing: Parse the xcresult bundle from my last test run and tell me 
+    [25/30] diagnosing: Stream the console logs from my app running in the simulator
+    [26/30] diagnosing: Walk through the onboarding flow on the simulator - fill in 
+    [27/30] diagnosing: List every interactable element currently visible on screen 
+    [28/30] diagnosing: Boot the iPad Pro simulator, install the .app bundle I built
+    [29/30] diagnosing: Read the full view hierarchy for the current screen so I can
+    [30/30] diagnosing: Write an automation that signs into the app, navigates to se

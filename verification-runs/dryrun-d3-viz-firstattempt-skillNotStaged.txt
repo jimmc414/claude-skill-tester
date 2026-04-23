@@ -1,0 +1,170 @@
+Frontmatter health: IMPROVABLE  (449 chars, 2.8% of budget)
+  WARN: [W1] No when_to_use field. Adding trigger phrases and exclusions in when_to_use provides a second independent trigger surface.
+Optimizing skill (DRY RUN, target F1 >= 0.9, max 3 rounds)
+
+==================================================
+Round 1/3
+==================================================
+  Generating test queries...
+  Running 15 tests (0 regression)...
+  [1/15] should trigger: I need to build a force-directed network graph showing relationships b
+           -> FAIL
+  [2/15] should trigger: Create an interactive choropleth map of US counties with custom color 
+           -> FAIL
+  [3/15] should trigger: Help me make a custom sunburst chart with smooth zoom transitions when
+           -> FAIL
+  [4/15] should trigger: I want a chord diagram showing migration flows between countries with 
+           -> ERR
+  [5/15] should trigger: Build a brushable timeline where selecting a range filters a detail ch
+           -> FAIL
+  [6/15] should trigger: Render a dendrogram of my hierarchical clustering results as SVG with 
+           -> FAIL
+  [7/15] should trigger: I'm using React and need a custom Sankey diagram for energy flow, can'
+           -> FAIL
+  [8/15] should trigger: Make me a publication-quality scatter plot with lasso selection and li
+           -> FAIL
+  [9/15] should trigger: Need a radial tree layout for an org chart with smooth transitions whe
+           -> FAIL
+  [10/15] should trigger: Create a bespoke visualisation binding my JSON data to SVG paths with 
+           -> FAIL
+  [11/15] should NOT trigger: I want a 3D globe with rotating camera and terrain heightmap for my ge
+           -> PASS
+  [12/15] should NOT trigger: Generate a quick bar chart of monthly sales in Excel and export it as 
+           -> PASS
+  [13/15] should NOT trigger: Help me clean and reshape this CSV dataset using pandas before I hand 
+           -> PASS
+  [14/15] should NOT trigger: Set up a Chart.js dashboard with five standard line charts pulling fro
+           -> PASS
+  [15/15] should NOT trigger: Build a 3D molecular structure viewer where users can rotate and inspe
+           -> PASS
+
+  Diagnosing 9 failure(s)...
+    [1/9] diagnosing: I need to build a force-directed network graph showing relat
+    [2/9] diagnosing: Create an interactive choropleth map of US counties with cus
+    [3/9] diagnosing: Help me make a custom sunburst chart with smooth zoom transi
+    [4/9] diagnosing: Build a brushable timeline where selecting a range filters a
+    [5/9] diagnosing: Render a dendrogram of my hierarchical clustering results as
+    [6/9] diagnosing: I'm using React and need a custom Sankey diagram for energy 
+    [7/9] diagnosing: Make me a publication-quality scatter plot with lasso select
+    [8/9] diagnosing: Need a radial tree layout for an org chart with smooth trans
+    [9/9] diagnosing: Create a bespoke visualisation binding my JSON data to SVG p
+
+  F1: 0.00 (NEEDS_WORK)  TP:0 FP:0 TN:4 FN:9
+  Proposing improved frontmatter...
+  [dry-run] Would update SKILL.md.
+
+==================================================
+Round 2/3
+==================================================
+  Generating test queries...
+  Running 24 tests (9 regression)...
+  [1/24] should trigger: I need to build a force-directed graph showing relationships between 2
+           -> FAIL
+  [2/24] should trigger: How do I create a choropleth map of US counties using an Albers USA pr
+           -> FAIL
+  [3/24] should trigger: Help me make a sunburst chart where users can click a segment to zoom 
+           -> FAIL
+  [4/24] should trigger: I want to visualize budget flow between departments as a sankey diagra
+           -> FAIL
+  [5/24] should trigger: Need a collapsible org chart where clicking a manager node expands or 
+           -> FAIL
+  [6/24] should trigger: Can you help me implement linked brushing across three coordinated sca
+           -> FAIL
+  [7/24] should trigger: I'm trying to build a zoomable, pannable SVG timeline of historical ev
+           -> FAIL
+  [8/24] should trigger: Building a radial dendrogram of phylogenetic data — I need fine contro
+           -> FAIL
+  [9/24] should trigger: What's the right way to bind an array of objects to SVG path elements 
+           -> FAIL
+  [10/24] should trigger: I need lasso selection on a points cloud so analysts can draw a freefo
+           -> FAIL
+  [11/24] should NOT trigger: Can you help me render a 3D point cloud of LiDAR data that the user ca
+           -> PASS
+  [12/24] should NOT trigger: Set up a simple bar chart using Chart.js showing monthly sales for the
+           -> PASS
+  [13/24] should NOT trigger: I want to build a Plotly dashboard in Dash with dropdowns and a slider
+           -> PASS
+  [14/24] should NOT trigger: Generate a matplotlib figure with a heatmap of correlations between th
+           -> PASS
+  [15/24] should NOT trigger: How do I build a draggable Kanban board with cards that can be moved b
+           -> PASS
+  [16/24] should trigger: I need to build a force-directed network graph showing relationships b
+           -> FAIL
+  [17/24] should trigger: Create an interactive choropleth map of US counties with custom color 
+           -> FAIL
+  [18/24] should trigger: Help me make a custom sunburst chart with smooth zoom transitions when
+           -> FAIL
+  [19/24] should trigger: Build a brushable timeline where selecting a range filters a detail ch
+           -> FAIL
+  [20/24] should trigger: Render a dendrogram of my hierarchical clustering results as SVG with 
+           -> FAIL
+  [21/24] should trigger: I'm using React and need a custom Sankey diagram for energy flow, can'
+           -> FAIL
+  [22/24] should trigger: Make me a publication-quality scatter plot with lasso selection and li
+           -> FAIL
+  [23/24] should trigger: Need a radial tree layout for an org chart with smooth transitions whe
+           -> FAIL
+  [24/24] should trigger: Create a bespoke visualisation binding my JSON data to SVG paths with 
+           -> FAIL
+
+  Diagnosing 19 failure(s)...
+    [1/19] diagnosing: I need to build a force-directed graph showing relationships
+    [2/19] diagnosing: How do I create a choropleth map of US counties using an Alb
+    [3/19] diagnosing: Help me make a sunburst chart where users can click a segmen
+    [4/19] diagnosing: I want to visualize budget flow between departments as a san
+    [5/19] diagnosing: Need a collapsible org chart where clicking a manager node e
+    [6/19] diagnosing: Can you help me implement linked brushing across three coord
+    [7/19] diagnosing: I'm trying to build a zoomable, pannable SVG timeline of his
+    [8/19] diagnosing: Building a radial dendrogram of phylogenetic data — I need f
+    [9/19] diagnosing: What's the right way to bind an array of objects to SVG path
+    [10/19] diagnosing: I need lasso selection on a points cloud so analysts can dra
+    [11/19] diagnosing: I need to build a force-directed network graph showing relat
+    [12/19] diagnosing: Create an interactive choropleth map of US counties with cus
+    [13/19] diagnosing: Help me make a custom sunburst chart with smooth zoom transi
+    [14/19] diagnosing: Build a brushable timeline where selecting a range filters a
+    [15/19] diagnosing: Render a dendrogram of my hierarchical clustering results as
+    [16/19] diagnosing: I'm using React and need a custom Sankey diagram for energy 
+    [17/19] diagnosing: Make me a publication-quality scatter plot with lasso select
+    [18/19] diagnosing: Need a radial tree layout for an org chart with smooth trans
+    [19/19] diagnosing: Create a bespoke visualisation binding my JSON data to SVG p
+
+  F1: 0.00 (NEEDS_WORK)  TP:0 FP:0 TN:5 FN:19
+  Proposing improved frontmatter...
+  [dry-run] Would update SKILL.md.
+
+==================================================
+Round 3/3
+==================================================
+  Generating test queries...
+  Running 34 tests (19 regression)...
+  [1/34] should trigger: I need to build a force-directed graph showing how our microservices c
+           -> FAIL
+  [2/34] should trigger: Help me create an interactive US county choropleth map colored by unem
+           -> FAIL
+  [3/34] should trigger: Can you make a zoomable sunburst chart for our organizational hierarch
+           -> FAIL
+  [4/34] should trigger: I want a sankey diagram showing federal budget allocation flowing from
+           -> FAIL (rival: mermaid)
+  [5/34] should trigger: Build a collapsible tree with nodes that expand when clicked, animatin
+           -> FAIL
+  [6/34] should trigger: Need a scatter plot where users can lasso-select points and see linked
+           -> FAIL
+  [7/34] should trigger: How do I bind a JSON array to SVG paths using enter/exit/update select
+           -> FAIL
+  [8/34] should trigger: Create a radial dendrogram of the phylogenetic tree for these species
+           -> FAIL
+  [9/34] should trigger: I want a brushable timeline at the bottom that filters the main chart 
+           -> FAIL
+  [10/34] should trigger: Visualize the citation network between these academic papers as a node
+           -> FAIL
+  [11/34] should NOT trigger: Render a 3D globe with rotating continents and animated particle flows
+           -> PASS
+  [12/34] should NOT trigger: Generate a static bar chart PNG from this CSV using matplotlib
+           -> PASS
+  [13/34] should NOT trigger: Build a Tableau dashboard with drill-down filters for our sales data
+           -> PASS
+  [14/34] should NOT trigger: Help me design a relational database schema for storing graph data wit
+           -> PASS
+  [15/34] should NOT trigger: Write a Python script using networkx to compute shortest paths and cen
+           -> PASS
+  [16/34] should trigger: I need to build a force-directed network graph showing relationships b

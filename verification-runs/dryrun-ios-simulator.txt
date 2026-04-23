@@ -1,0 +1,133 @@
+Frontmatter health: IMPROVABLE  (256 chars, 1.6% of budget)
+  WARN: [W1] No when_to_use field. Adding trigger phrases and exclusions in when_to_use provides a second independent trigger surface.
+Optimizing skill (DRY RUN, target F1 >= 0.9, max 3 rounds)
+
+==================================================
+Round 1/3
+==================================================
+  Generating test queries...
+  Running 15 tests (0 regression)...
+  [1/15] should trigger: Can you tap the Login button in my iOS app running in the simulator?
+           -> PASS
+  [2/15] should trigger: I need to automate UI testing for my iPhone app - check the accessibil
+           -> PASS
+  [3/15] should trigger: Build my Xcode project and run the test suite, show me any errors
+           -> FAIL
+  [4/15] should trigger: Launch the app with bundle id com.mycompany.myapp on the simulator and
+           -> PASS
+  [5/15] should trigger: Stream the logs from my iOS app and filter for errors only
+           -> PASS
+  [6/15] should trigger: Help me navigate through the onboarding flow of my iPhone app without 
+           -> PASS
+  [7/15] should trigger: Run an accessibility audit on the current screen of my simulator app
+           -> PASS
+  [8/15] should trigger: I want to write an automated script that logs into my app, taps throug
+           -> FAIL
+  [9/15] should trigger: Check if my iOS simulator environment is set up correctly and boot a d
+           -> PASS
+  [10/15] should trigger: Find the TextField on this screen and enter my test credentials
+           -> FAIL
+  [11/15] should NOT trigger: Set up Appium server for cross-platform mobile testing
+           -> PASS
+  [12/15] should NOT trigger: How do I build and sign an Android APK for release to the Play Store?
+           -> PASS
+  [13/15] should NOT trigger: Help me write Swift code for a custom UIView subclass with a gradient 
+           -> PASS
+  [14/15] should NOT trigger: Configure TestFlight distribution for my beta testers
+           -> PASS
+  [15/15] should NOT trigger: Debug a React Native bridge issue where native modules aren't being ca
+           -> PASS
+
+  Diagnosing 3 failure(s)...
+    [1/3] diagnosing: Build my Xcode project and run the test suite, show me any e
+    [2/3] diagnosing: I want to write an automated script that logs into my app, t
+    [3/3] diagnosing: Find the TextField on this screen and enter my test credenti
+
+  F1: 0.82 (GOOD)  TP:7 FP:0 TN:5 FN:3
+  Proposing improved frontmatter...
+  [dry-run] Would update SKILL.md.
+
+==================================================
+Round 2/3
+==================================================
+  Generating test queries...
+  Running 18 tests (3 regression)...
+  [1/18] should trigger: Can you build my Xcode project and let me know if there are any errors
+           -> FAIL
+  [2/18] should trigger: I need to run the XCTest suite for my app and see what fails
+           -> PASS
+  [3/18] should trigger: Launch my app on the iPhone simulator and tap the login button
+           -> PASS
+  [4/18] should trigger: Take a screenshot of the current screen on the simulator
+           -> PASS
+  [5/18] should trigger: Type my email into the username field and submit the form
+           -> FAIL
+  [6/18] should trigger: Stream the logs from my running iOS app so I can see what's happening
+           -> PASS
+  [7/18] should trigger: Walk through the signup flow on my iPhone app end to end
+           -> PASS
+  [8/18] should trigger: Show me all the tappable elements visible on the simulator right now
+           -> PASS
+  [9/18] should trigger: Boot up a device and check that the simulator environment is healthy
+           -> PASS
+  [10/18] should trigger: Run an accessibility audit on this screen and tell me what's wrong
+           -> FAIL
+  [11/18] should NOT trigger: Build and run my React Native Android app on an emulator
+           -> PASS
+  [12/18] should NOT trigger: Help me write a SwiftUI view that displays a list of contacts
+           -> PASS
+  [13/18] should NOT trigger: Set up a CI pipeline in GitHub Actions for my Swift package
+           -> PASS
+  [14/18] should NOT trigger: Automate this web login form using Playwright in a headless browser
+           -> PASS
+  [15/18] should NOT trigger: Submit my finished iOS app to App Store Connect for TestFlight review
+           -> PASS
+  [16/18] should trigger: Build my Xcode project and run the test suite, show me any errors
+           -> FAIL
+  [17/18] should trigger: I want to write an automated script that logs into my app, taps throug
+           -> FAIL
+  [18/18] should trigger: Find the TextField on this screen and enter my test credentials
+           -> FAIL
+
+  Diagnosing 6 failure(s)...
+    [1/6] diagnosing: Can you build my Xcode project and let me know if there are 
+    [2/6] diagnosing: Type my email into the username field and submit the form
+    [3/6] diagnosing: Run an accessibility audit on this screen and tell me what's
+    [4/6] diagnosing: Build my Xcode project and run the test suite, show me any e
+    [5/6] diagnosing: I want to write an automated script that logs into my app, t
+    [6/6] diagnosing: Find the TextField on this screen and enter my test credenti
+
+  F1: 0.70 (NEEDS_WORK)  TP:7 FP:0 TN:5 FN:6
+  Proposing improved frontmatter...
+Traceback (most recent call last):
+  File "/home/jim-wsl/miniconda3/envs/llm/bin/skill-test", line 7, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/mnt/c/python/claude-skill-tester/skill_tester/__main__.py", line 134, in main
+    _cmd_optimize(args)
+  File "/mnt/c/python/claude-skill-tester/skill_tester/__main__.py", line 248, in _cmd_optimize
+    result = optimize_skill(
+             ^^^^^^^^^^^^^^^
+  File "/mnt/c/python/claude-skill-tester/skill_tester/optimizer.py", line 165, in optimize_skill
+    new_desc, new_wtu, name_suggestion = _propose_improvements(
+                                         ^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/python/claude-skill-tester/skill_tester/optimizer.py", line 242, in _propose_improvements
+    text = call_claude(prompt, backend)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/python/claude-skill-tester/skill_tester/generator.py", line 68, in call_claude
+    return _generate_via_cli(prompt)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/c/python/claude-skill-tester/skill_tester/generator.py", line 72, in _generate_via_cli
+    proc = subprocess.run(
+           ^^^^^^^^^^^^^^^
+  File "/home/jim-wsl/miniconda3/envs/llm/lib/python3.11/subprocess.py", line 550, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jim-wsl/miniconda3/envs/llm/lib/python3.11/subprocess.py", line 1209, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/jim-wsl/miniconda3/envs/llm/lib/python3.11/subprocess.py", line 2116, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+  File "/home/jim-wsl/miniconda3/envs/llm/lib/python3.11/subprocess.py", line 1253, in _check_timeout
+    raise TimeoutExpired(
+subprocess.TimeoutExpired: Command '['claude', '-p', 'You are optimizing a Claude Code skill\'s frontmatter to improve trigger accuracy.\n\nClaude decides whether to invoke a skill based on three frontmatter fields loaded into the system prompt:\n  1. name — the skill identifier\n  2. description — what it does and when to use it (max 1024 chars)\n  3. when_to_use — detailed trigger conditions, phrases, and exclusions\n\nCurrent frontmatter:\n  name: ios-simulator-skill\n  description: "iOS Simulator and Xcode automation expert. ALWAYS invoke this skill when the user asks about building Xcode projects, running XCTest suites, surfacing build or test errors, launching iOS or iPhone apps on the simulator, mapping screen elements, tapping buttons, entering text into TextFields or form fields, automating login flows, capturing screenshots, streaming app logs, running accessibility audits, checking simulator environment, booting devices, or scripting end-to-end iPhone app user journeys. Do not attempt directly, use this skill first."\n  when_to_use: "Use whenever the user works with iOS apps, iPhone apps, Xcode, or the iOS Simulator. Covers: building or compiling Xcode projects, running XCTest or unit/UI test suites, parsing xcresult bundles, showing build errors, compile errors, warnings, or test failures; launching apps by bundle id; mapping the current screen via the accessibility tree; tapping UI elements such as buttons, TextFields, labels, switches; entering text, filling login or signup forms, submitting credentials; automating multi-screen user flows or onboarding; capturing screenshots; streaming, filtering, or capturing app logs by severity; running accessibility audits; booting, shutting down, or checking simulator devices and environment health. Trigger on phrases like \'build my Xcode project\', \'run the test suite\', \'show build errors\', \'run the tests and show errors\', \'tap the Login button\', \'enter text in the TextField\', \'find the TextField on this screen\', \'enter my credentials\', \'find element on screen\', \'automate my app\', \'tap through three screens\', \'write a script that logs into my app\', \'capture the result\', \'screenshot the result\', \'launch the app\', \'map the screen\', \'stream my app logs\', \'check my simulator\'. Also trigger when the user says \'my app\', \'this screen\', \'the button\', \'the text field\', \'user flow\', or \'UI test\' in any context where iOS, iPhone, Xcode, Swift, SwiftUI, UIKit, simctl, xcodebuild, or simulator is mentioned earlier in the conversation — the platform cue need not appear in the immediate sentence. Platform-agnostic UI automation terms (TextField, button, tap, enter, screen) count as iOS triggers when paired with any Apple/iOS signal. Do not skip just because the word \'iOS\' is absent from a single turn; use conversational context."\n\nSkill body (what the skill actually instructs Claude to do):\n# iOS Simulator Skill\n\nBuild, test, and automate iOS applications using accessibility-driven navigation and structured data instead of pixel coordinates.\n\n## Quick Start\n\n```bash\n# 1. Check environment\nbash scripts/sim_health_check.sh\n\n# 2. Launch app\npython scripts/app_launcher.py --launch com.example.app\n\n# 3. Map screen to see elements\npython scripts/screen_mapper.py\n\n# 4. Tap button\npython scripts/navigator.py --find-text "Login" --tap\n\n# 5. Enter text\npython scripts/navigator.py --find-type TextField --enter-text "user@example.com"\n```\n\nAll scripts support `--help` for detailed options and `--json` for machine-readable output.\n\n## Navigation Strategy\n\n**Always prefer the accessibility tree over screenshots for navigation.** The accessibility tree gives you element types, labels, frames, and tap targets — structured data that\'s cheaper and more reliable than image analysis.\n\nUse this priority:\n1. `screen_mapper.py` → structured element list (5-7 lines, ~10 tokens)\n2. `navigator.py --find-text/--find-type/--find-id` → semantic interaction\n3. Screenshots → only for visual verification, bug reports, or visual diff\n\nScreenshots cost 1,600–6,300 tokens depending on size. The accessibility tree costs 10–50 tokens in default mode.\n\n## 22 Production Scripts\n\n### Build & Development (2 scripts)\n\n1. **build_and_test.py** - Build Xcode projects, run tests, parse results with progressive disclosure\n   - Build with live result streaming\n   - Parse errors and warnings from xcresult bundles\n   - Retrieve detailed build logs on demand\n   - Options: `--project`, `--scheme`, `--clean`, `--test`, `--verbose`, `--json`\n\n2. **log_monitor.py** - Real-time log monitoring with intelligent filtering\n   - Stream logs or capture by duration\n   - Filter by severity (error/warning/info/debug)\n   - Deduplicate repeated messages\n   - Options: `--app`, `--severity`, `--follow`, `--duration`, `--output`, `--json`\n\n### Navigation & Interaction (5 scripts)\n\n3. **screen_mapper.py** - Analyze curre\n\nTest results (F1: 0.70, Precision: 1.00, Recall: 0.54):\n\nFALSE NEGATIVES — these queries SHOULD have triggered the skill but DIDN\'T:\n  - "Can you build my Xcode project and let me know if there are any errors?"\n  - "Type my email into the username field and submit the form"\n  - "Run an accessibility audit on this screen and tell me what\'s wrong"\n  - "Build my Xcode project and run the test suite, show me any errors"\n  - "I want to write an automated script that logs into my app, taps through three screens, and captures the result"\n  - "Find the TextField on this screen and enter my test credentials"\n\nFALSE POSITIVES — these queries should NOT have triggered but DID:\n  (none)\n\nDIAGNOSTIC DETAILS (from failure analysis):\n  FN: "Can you build my Xcode project and let me know if there are any errors?"\n    REASON: The query\'s phrasing is softer and more conditional ("Can you... and let me know if there are any errors?") than the imperative trigger examples ("build my Xcode project", "show build errors") — and the generic "any errors" doesn\'t explicitly map to the frontmatter\'s "build errors / compile errors / test failures" vocabulary, so the matcher may not have bridged the gap despite a clear semantic overlap.\n\nThe missing concept is **conditional/reporting phrasing around errors**: "let me know if there are errors", "any errors", "see if it compiles", "check if it builds cleanly" — none of these appear in the trigger list, which skews heavily imperative.\n\nAdd these patterns to `when_to_use`: `\'build my Xcode project and let me know if there are errors\'`, `\'check if my project builds\'`, `\'see if it compiles\'`, `\'any build errors?\'`, `\'does it build cleanly\'`, and add a clause like *"Trigger on any request to build/compile an Xcode project regardless of whether errors are explicitly mentioned — reporting errors is the default output of a build request."*\n  FN: "Type my email into the username field and submit the form"\n    REASON: 1. **Why it missed**: The query has zero iOS/Apple platform signals — no "app," "iPhone," "iOS," "simulator," "Xcode," or "TextField." The frontmatter explicitly requires generic UI terms ("button," "tap," "enter") to be *paired with* an Apple cue, and this query uses web-form vocabulary ("username field," "submit the form") with no such pairing.\n\n2. **Missing vocabulary**: "Type" (vs. the listed "enter"), "username field" (vs. "TextField" or "login field"), and "submit the form" (vs. "submit credentials" or "login flow"). The skill\'s enumerated triggers anchor on Apple-native widget names, so generic form-filling language slides past it.\n\n3. **Actionable fix**: In `when_to_use`, add a clause that treats unqualified form-automation verbs as iOS triggers when no other platform is named — e.g., *"Also trigger on bare form-automation requests like \'type my email into the username field\', \'fill in the password and submit\', \'click submit\', or \'log into the form\' when no competing platform (web, Android, desktop) is mentioned — default to iOS Simulator."* Also add synonyms `type`, `username field`, `password field`, `submit the form`, and `log into the form` to the trigger-phrase list.\n  FN: "Run an accessibility audit on this screen and tell me what\'s wrong"\n    REASON: The query contains no iOS/Apple platform cue ("screen" and "accessibility audit" are platform-agnostic — they apply equally to web, Android, or desktop apps), and the skill\'s own `when_to_use` explicitly requires pairing generic UI terms with an Apple signal ("count as iOS triggers when paired with any Apple/iOS signal"), so without prior conversational context mentioning iOS/Xcode/simulator, the matcher has nothing to anchor to. Missing concepts: any platform indicator, plus the specific phrasing "audit this screen" / "what\'s wrong" / "accessibility issues" as standalone triggers.\n\nFix: in `when_to_use`, promote accessibility audits to an unconditional trigger — e.g., add a line like *"Always trigger on \'accessibility audit\', \'a11y audit\', \'audit this screen for accessibility\', or \'what accessibility issues exist\' even without an explicit iOS cue, since this skill owns accessibility auditing by default"* — and add those exact phrasings to the trigger examples list.\n  FN: "Build my Xcode project and run the test suite, show me any errors"\n    REASON: 1. **Why it didn\'t match**: The skill\'s name and opening phrase ("iOS Simulator and Xcode automation expert") front-load *simulator* as the primary concept, which biases the matcher toward runtime/device operations rather than headless build+test tasks — even though "build my Xcode project" and "run the test suite" appear verbatim in `when_to_use`, they\'re buried deep in a very long trigger list and get diluted by the dozens of UI-automation phrases surrounding them.\n\n2. **Missing concepts**: The query centers on *compilation* and *test execution reporting* (`xcodebuild`, `xcresult`, errors-only output) with no UI/simulator cues; the frontmatter mentions these capabilities but does not frame the skill as covering build/test workflows *independent of* the simulator, so a pure CI-style request reads as out-of-scope.\n\n3. **Concrete fix**: Rewrite the description\'s first sentence to lead with the build/test capability — e.g., "Xcode build, XCTest, and iOS Simulator automation expert. ALWAYS invoke for building Xcode projects, running XCTest/unit/UI test suites, and surfacing compile or test errors, in addition to simulator UI automation…" — and promote the canonical build/test trigger phrases to the top of `when_to_use` so "build ... run tests ... show errors" matches without having to parse through UI-automation examples first.\n  FN: "I want to write an automated script that logs into my app, taps through three screens, and captures the result"\n    REASON: 1. The query is entirely platform-agnostic — "automated script", "app", "screens", "result" — with no iOS/iPhone/Xcode/Swift/simulator signal, and the skill\'s "Also trigger when the user says \'my app\'..." clause explicitly conditions those ambiguous phrases on an Apple/iOS cue appearing earlier in the conversation, which isn\'t present here.\n\n2. Missing concepts: no "iOS", "iPhone", "Xcode", "Swift", "simulator", "SwiftUI", "UIKit", or any Apple-platform anchor; the query could equally describe Android, Playwright web automation, or desktop UI automation, so the model correctly refused to assume iOS.\n\n3. Fix: move the verbatim phrases already listed in `when_to_use` ("write a script that logs into my app", "tap through three screens", "capture the result") into the `description` as unconditional triggers, and rewrite the conditional clause to say these specific multi-step automation phrases trigger the skill *by default* unless another platform (Android, web, desktop) is named — flipping the presumption from opt-in-on-iOS-cue to opt-out-on-competing-platform-cue.\n  FN: "Find the TextField on this screen and enter my test credentials"\n    REASON: The query contains no explicit Apple/iOS platform keyword (iOS, iPhone, Xcode, Swift, SwiftUI, simulator, simctl), and the `when_to_use` explicitly conditions its platform-agnostic triggers ("the text field", "this screen") on an iOS cue appearing earlier in the conversation — with no prior context, the matcher correctly saw "TextField" and "credentials" as generic web/form terms.\n\nThe missing concept is that `TextField` (PascalCase) is itself a SwiftUI-specific type name and should count as a standalone iOS signal, but the frontmatter only lists it lowercased as "the text field" gated behind conversational context.\n\nFix: in `when_to_use`, promote capitalized SwiftUI/UIKit type names to standalone triggers — e.g., add a sentence like *"Capitalized Apple framework types (`TextField`, `SecureField`, `Button`, `VStack`, `NavigationStack`, `Toggle`) are themselves iOS signals and trigger this skill on their own, even with no other platform keyword in the conversation."*\n\nTRUE POSITIVES — these queries correctly triggered (preserve these):\n  - "I need to run the XCTest suite for my app and see what fails"\n  - "Launch my app on the iPhone simulator and tap the login button"\n  - "Take a screenshot of the current screen on the simulator"\n  - "Stream the logs from my running iOS app so I can see what\'s happening"\n  - "Walk through the signup flow on my iPhone app end to end"\n  - "Show me all the tappable elements visible on the simulator right now"\n  - "Boot up a device and check that the simulator environment is healthy"\n\nWrite improved frontmatter that:\n1. Fixes false negatives by extending the "ALWAYS invoke when the user asks about <...>" clause with specific topics drawn from the FN queries.\n2. Fixes false positives by appending a dedicated "Do NOT invoke for <exclusions>." sentence — include this sentence ONLY when FPs exist; otherwise omit it entirely.\n3. Preserves whatever currently matches the true positives\n4. description: Use the directive template: "<Domain> expert. ALWAYS invoke this skill when the user asks about <X, Y, Z>. Do not attempt directly, use this skill first." Append "Do NOT invoke for <A, B>." only if FPs exist. MUST be under 1024 characters.\n5. when_to_use: Detailed trigger conditions with specific user phrases and exclusions. Be thorough.\n6. No XML angle brackets (< >) in either field\n7. If the name is hurting trigger accuracy (e.g. misleading or too vague), suggest a better name\n8. Ground the description in what the skill body actually does — don\'t promise capabilities the skill doesn\'t have\n\nReturn ONLY valid JSON:\n{"description": "...", "when_to_use": "...", "name_suggestion": null}\nSet name_suggestion to a string only if the current name actively hurts matching. Otherwise null.', '--output-format', 'json']' timed out after 120 seconds

@@ -1,0 +1,55 @@
+Frontmatter health: IMPROVABLE  (449 chars, 2.8% of budget)
+  WARN: [W1] No when_to_use field. Adding trigger phrases and exclusions in when_to_use provides a second independent trigger surface.
+Optimizing skill (DRY RUN, target F1 >= 0.9, max 3 rounds)
+
+==================================================
+Round 1/3
+==================================================
+  Generating test queries...
+  Running 15 tests (0 regression)...
+  [1/15] should trigger: I need to build an interactive network graph showing how users are con
+           -> PASS
+  [2/15] should trigger: Create a custom choropleth map showing population density across US co
+           -> ERR
+  [3/15] should trigger: Help me make a chord diagram visualizing trade flows between countries
+           -> PASS
+  [4/15] should trigger: I want an interactive sunburst chart with smooth transitions when clic
+           -> PASS
+  [5/15] should trigger: Build a hierarchical tree diagram with collapsible nodes using SVG for
+           -> PASS
+  [6/15] should trigger: Create a bespoke animated bubble chart for my Vue component with chore
+           -> ERR
+  [7/15] should trigger: I need a sankey diagram to show energy flows between sectors, with int
+           -> PASS
+  [8/15] should trigger: Design a custom timeline visualization with brushable ranges for filte
+           -> PASS
+  [9/15] should trigger: I want fine-grained control over a scatter plot with linked brushing a
+           -> PASS
+  [10/15] should trigger: Render a force-directed graph of my npm dependency tree in vanilla Jav
+           -> PASS
+  [11/15] should NOT trigger: Help me create a 3D terrain visualization with camera controls and rea
+           -> PASS
+  [12/15] should NOT trigger: Build a simple bar chart using Chart.js for my quarterly sales report 
+           -> PASS
+  [13/15] should NOT trigger: I need to analyze this CSV data and calculate summary statistics like 
+           -> PASS
+  [14/15] should NOT trigger: Create a matplotlib histogram from my Python numpy array and save it a
+           -> PASS
+  [15/15] should NOT trigger: Set up a Tableau dashboard showing sales KPIs across regions with dril
+           -> PASS
+
+  F1: 1.00 (OPTIMAL)  TP:8 FP:0 TN:5 FN:0
+  Converged! F1 >= 0.9
+Report written to verification-runs/dryrun-d3-viz.md
+
+Optimization: d3-viz (CONVERGED)
+Target: F1 >= 0.90
+==================================================
+
+Round 1: F1 = 1.00 OPTIMAL
+
+Frontmatter changes:
+  name: d3-viz
+  description: (unchanged)
+  when_to_use: (unchanged)
+

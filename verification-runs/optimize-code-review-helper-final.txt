@@ -1,0 +1,226 @@
+Frontmatter health: HEALTHY  (179 chars, 1.1% of budget)
+  INFO: [I1] description and when_to_use are complementary (maximizes trigger surface).
+
+Optimizing skill (LIVE, target F1 >= 0.9, max 3 rounds)
+
+==================================================
+Round 1/3
+==================================================
+  Generating test queries...
+  Running 15 tests (0 regression)...
+  [1/15] should trigger: Can you take a look at my changes before I submit this PR?
+           -> FAIL
+  [2/15] should trigger: I just finished the auth module - any issues you see in it?
+           -> FAIL
+  [3/15] should trigger: Review this function for bugs and performance problems
+           -> FAIL
+  [4/15] should trigger: Go through my diff and flag anything that looks off
+           -> FAIL
+  [5/15] should trigger: Check if there are any security issues in the code I just wrote
+           -> FAIL (rival: security-review)
+  [6/15] should trigger: Before I merge, give me feedback on my changes
+           -> FAIL
+  [7/15] should trigger: What do you think of this implementation? Any style issues or gotchas?
+           -> FAIL
+  [8/15] should trigger: Audit my Python script for best practices and idiom violations
+           -> FAIL
+  [9/15] should trigger: Look over the patch I'm about to ship and tell me what's broken
+           -> FAIL
+  [10/15] should trigger: Give me a thorough critique of the changes in src/handlers.py
+           -> FAIL
+  [11/15] should NOT trigger: Write me a function that parses CSV files into dicts
+           -> PASS
+  [12/15] should NOT trigger: Explain how this recursive traversal works in tree.py
+           -> PASS
+  [13/15] should NOT trigger: My test is failing with a TypeError - can you help debug it?
+           -> PASS
+  [14/15] should NOT trigger: Run the unit tests in the tests directory and show me the output
+           -> PASS
+  [15/15] should NOT trigger: Generate API documentation for all public methods in this module
+           -> PASS
+
+  Diagnosing 10 failure(s)...
+    [1/10] diagnosing: Can you take a look at my changes before I submit this PR?
+    [2/10] diagnosing: I just finished the auth module - any issues you see in it?
+    [3/10] diagnosing: Review this function for bugs and performance problems
+    [4/10] diagnosing: Go through my diff and flag anything that looks off
+    [5/10] diagnosing: Check if there are any security issues in the code I just wr
+    [6/10] diagnosing: Before I merge, give me feedback on my changes
+    [7/10] diagnosing: What do you think of this implementation? Any style issues o
+    [8/10] diagnosing: Audit my Python script for best practices and idiom violatio
+    [9/10] diagnosing: Look over the patch I'm about to ship and tell me what's bro
+    [10/10] diagnosing: Give me a thorough critique of the changes in src/handlers.p
+
+  F1: 0.00 (NEEDS_WORK)  TP:0 FP:0 TN:5 FN:10
+  Proposing improved frontmatter...
+  Backup saved: /mnt/c/python/claude-skill-tester/.claude/skills/code-review-helper/SKILL.md.bak
+  SKILL.md updated.
+
+==================================================
+Round 2/3
+==================================================
+  Generating test queries...
+  Running 25 tests (10 regression)...
+  [1/25] should trigger: Can you take a look at my changes in auth.py before I push?
+           -> PASS
+  [2/25] should trigger: I just finished implementing the rate limiter — any issues you can spo
+           -> PASS
+  [3/25] should trigger: Go through this diff and flag anything that looks off
+           -> PASS
+  [4/25] should trigger: What do you think of the new caching logic in cache_manager.go?
+           -> FAIL
+  [5/25] should trigger: Audit the user input handling in this PR for security problems
+           -> FAIL (rival: security-review)
+  [6/25] should trigger: Before I merge this, are there any gotchas in the migration script?
+           -> PASS
+  [7/25] should trigger: Check my React component for idiom violations and performance problems
+           -> PASS
+  [8/25] should trigger: Scan src/parser.rs for bugs or anything that breaks Rust conventions
+           -> PASS
+  [9/25] should trigger: Give me feedback on the function I just wrote — is it clean enough to 
+           -> FAIL
+  [10/25] should trigger: Inspect the patch I attached and tell me what's broken
+           -> FAIL
+  [11/25] should NOT trigger: Write a unit test for the calculate_tax function
+           -> PASS
+  [12/25] should NOT trigger: Refactor this 200-line function into smaller helpers
+           -> PASS
+  [13/25] should NOT trigger: Explain how the OAuth flow works in this codebase
+           -> PASS
+  [14/25] should NOT trigger: Generate documentation for the public API in api.py
+           -> PASS
+  [15/25] should NOT trigger: Deploy the latest commit to staging
+           -> PASS
+  [16/25] should trigger: Can you take a look at my changes before I submit this PR?
+           -> PASS
+  [17/25] should trigger: I just finished the auth module - any issues you see in it?
+           -> PASS
+  [18/25] should trigger: Review this function for bugs and performance problems
+           -> PASS
+  [19/25] should trigger: Go through my diff and flag anything that looks off
+           -> PASS
+  [20/25] should trigger: Check if there are any security issues in the code I just wrote
+           -> FAIL (rival: security-review)
+  [21/25] should trigger: Before I merge, give me feedback on my changes
+           -> PASS
+  [22/25] should trigger: What do you think of this implementation? Any style issues or gotchas?
+           -> PASS
+  [23/25] should trigger: Audit my Python script for best practices and idiom violations
+           -> PASS
+  [24/25] should trigger: Look over the patch I'm about to ship and tell me what's broken
+           -> PASS
+  [25/25] should trigger: Give me a thorough critique of the changes in src/handlers.py
+           -> PASS
+
+  Diagnosing 5 failure(s)...
+    [1/5] diagnosing: What do you think of the new caching logic in cache_manager.
+    [2/5] diagnosing: Audit the user input handling in this PR for security proble
+    [3/5] diagnosing: Give me feedback on the function I just wrote — is it clean 
+    [4/5] diagnosing: Inspect the patch I attached and tell me what's broken
+    [5/5] diagnosing: Check if there are any security issues in the code I just wr
+
+  F1: 0.86 (GOOD)  TP:15 FP:0 TN:5 FN:5
+  Proposing improved frontmatter...
+  SKILL.md updated.
+
+==================================================
+Round 3/3
+==================================================
+  Generating test queries...
+  Running 29 tests (14 regression)...
+  [1/29] should trigger: Can you take a look at the changes I just made to auth.py?
+           -> PASS
+  [2/29] should trigger: I just finished implementing the rate limiter — any problems with it?
+           -> PASS
+  [3/29] should trigger: Review this diff before I merge it
+           -> PASS
+  [4/29] should trigger: What do you think of the pagination logic in users.ts?
+           -> PASS
+  [5/29] should trigger: Is this PR clean enough to ship?
+           -> PASS
+  [6/29] should trigger: Spot any issues with the error handling in handleRequest()?
+           -> PASS
+  [7/29] should trigger: Give me feedback on the patch I pasted above
+           -> FAIL
+  [8/29] should trigger: Audit the validateInput function for bugs and style problems
+           -> PASS
+  [9/29] should trigger: Anything off about the way I wrote the retry logic in worker.go?
+           -> PASS
+  [10/29] should trigger: Take a second pass over my checkout handler before I open the PR
+           -> PASS
+  [11/29] should NOT trigger: Write a function that parses ISO 8601 dates into Unix timestamps
+           -> PASS
+  [12/29] should NOT trigger: Run a full security review across everything on this branch
+           -> PASS
+  [13/29] should NOT trigger: Explain what this regex pattern is matching and why
+           -> PASS
+  [14/29] should NOT trigger: Help me debug why my integration test keeps timing out
+           -> PASS
+  [15/29] should NOT trigger: Refactor the UserService class into smaller, focused modules
+           -> PASS
+  [16/29] should trigger: Can you take a look at my changes before I submit this PR?
+           -> PASS
+  [17/29] should trigger: I just finished the auth module - any issues you see in it?
+           -> PASS
+  [18/29] should trigger: Review this function for bugs and performance problems
+           -> PASS
+  [19/29] should trigger: Go through my diff and flag anything that looks off
+           -> PASS
+  [20/29] should trigger: Check if there are any security issues in the code I just wrote
+           -> FAIL (rival: security-review)
+  [21/29] should trigger: Before I merge, give me feedback on my changes
+           -> PASS
+  [22/29] should trigger: What do you think of this implementation? Any style issues or gotchas?
+           -> PASS
+  [23/29] should trigger: Audit my Python script for best practices and idiom violations
+           -> PASS
+  [24/29] should trigger: Look over the patch I'm about to ship and tell me what's broken
+           -> PASS
+  [25/29] should trigger: Give me a thorough critique of the changes in src/handlers.py
+           -> FAIL
+  [26/29] should trigger: What do you think of the new caching logic in cache_manager.go?
+           -> FAIL
+  [27/29] should trigger: Audit the user input handling in this PR for security problems
+           -> FAIL (rival: security-review)
+  [28/29] should trigger: Give me feedback on the function I just wrote — is it clean enough to 
+           -> PASS
+  [29/29] should trigger: Inspect the patch I attached and tell me what's broken
+           -> FAIL
+
+  Diagnosing 6 failure(s)...
+    [1/6] diagnosing: Give me feedback on the patch I pasted above
+    [2/6] diagnosing: Check if there are any security issues in the code I just wr
+    [3/6] diagnosing: Give me a thorough critique of the changes in src/handlers.p
+    [4/6] diagnosing: What do you think of the new caching logic in cache_manager.
+    [5/6] diagnosing: Audit the user input handling in this PR for security proble
+    [6/6] diagnosing: Inspect the patch I attached and tell me what's broken
+
+  F1: 0.86 (GOOD)  TP:18 FP:0 TN:4 FN:6
+  Proposing improved frontmatter...
+  SKILL.md updated.
+Report written to verification-runs/optimize-code-review-helper-final.md
+
+Optimization: code-review-helper (DID NOT CONVERGE)
+Target: F1 >= 0.90
+==================================================
+
+Round 1: F1 = 0.00 NEEDS_WORK
+  FN (10): "Can you take a look at my changes before I subm...", "I just finished the auth module - any issues yo...", "Review this function for bugs and performance p..." (+7 more)
+
+Round 2: F1 = 0.86 GOOD
+  FN (5): "What do you think of the new caching logic in c...", "Audit the user input handling in this PR for se...", "Give me feedback on the function I just wrote —..." (+2 more)
+  Regression cases: 10
+
+Round 3: F1 = 0.86 GOOD  [+0.00]
+  FN (6): "Give me feedback on the patch I pasted above", "Check if there are any security issues in the c...", "Give me a thorough critique of the changes in s..." (+3 more)
+  Regression cases: 14
+
+Frontmatter changes:
+  name: code-review-helper
+  description:
+    BEFORE: "Reviews code for quality, style, bugs, performance, security, and best practices across all programming languages."
+    AFTER:  "Code review expert. ALWAYS invoke this skill when the user asks about reviewing, checking, auditing, inspecting, crit..."
+  when_to_use:
+    BEFORE: "When a user wants any form of code review."
+    AFTER:  "Trigger on any request for code feedback, critique, review, audit, inspection, or analysis - whether formal ('code re..."
+
